@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "./Logo";
 import { Badge } from "@/components/ui/badge";
+import { NavLink } from "react-router-dom";
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -55,12 +56,12 @@ export const Header = () => {
       {/* Main Header Section - Scrollable */}
       <header className="bg-background border-b-2 border-border">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-4 gap-4">
+          <div className="flex items-center justify-between py-3 md:py-4 gap-2 md:gap-4">
             {/* Logo - Left */}
-            <div className="flex items-center gap-3">
-              <a href="#home" className="flex items-center">
-                <Logo className="text-3xl" />
-              </a>
+            <div className="flex items-center gap-2 md:gap-3">
+              <NavLink to="/" className="flex items-center">
+                <Logo className="text-xl md:text-2xl lg:text-3xl" />
+              </NavLink>
               <Badge variant="secondary" className="hidden lg:flex items-center gap-1">
                 <Award className="h-3 w-3" />
                 <span className="text-xs">Trusted</span>
@@ -120,8 +121,9 @@ export const Header = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden flex items-center justify-center"
               onClick={toggleMobileMenu}
+              aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
@@ -148,35 +150,74 @@ export const Header = () => {
       </header>
 
       {/* Sticky Navigation Menu with Features */}
-      <nav className={`${isScrolled ? "fixed top-0 left-0 right-0" : ""} bg-background border-b-2 border-border z-50 transition-all duration-300`}>
+      <nav className={`${isScrolled ? "fixed top-0 left-0 right-0 shadow-md" : ""} bg-background border-b-2 border-border z-50 transition-all duration-300`}>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
+            {/* Show Logo and Menu button when scrolled on mobile */}
+            {isScrolled && (
+              <div className="md:hidden flex items-center justify-between w-full py-2">
+                <NavLink to="/" className="flex items-center">
+                  <Logo className="text-lg" />
+                </NavLink>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="flex items-center justify-center"
+                  onClick={toggleMobileMenu}
+                  aria-label="Toggle menu"
+                >
+                  {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                </Button>
+              </div>
+            )}
+
             {/* Navigation Links */}
             <ul className={`hidden md:flex items-center justify-center gap-1 py-3 flex-1 ${isMobileMenuOpen ? "hidden" : ""}`}>
               <li>
-                <a href="/" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
+                  }
+                >
                   Home
-                </a>
+                </NavLink>
               </li>
               <li>
-                <a href="/#shop" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
+                <a
+                  href="/#shop"
+                  className="px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide scroll-smooth"
+                >
                   Shop
                 </a>
               </li>
               <li>
-                <a href="/about" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
+                <NavLink
+                  to="/about"
+                  className={({ isActive }) =>
+                    `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
+                  }
+                >
                   About
-                </a>
+                </NavLink>
               </li>
               <li>
-                <a href="/#blog" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
+                <a
+                  href="/#blog"
+                  className="px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide scroll-smooth"
+                >
                   Blog
                 </a>
               </li>
               <li>
-                <a href="/contact" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
+                <NavLink
+                  to="/contact"
+                  className={({ isActive }) =>
+                    `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
+                  }
+                >
                   Contact
-                </a>
+                </NavLink>
               </li>
             </ul>
 
@@ -194,41 +235,67 @@ export const Header = () => {
           </div>
 
           {/* Mobile Menu */}
-          <ul className={`md:hidden ${isMobileMenuOpen ? "block" : "hidden"} border-t-2 border-border bg-background`}>
-            <li>
-              <a href="/" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border">
+          <ul className={`md:hidden ${isMobileMenuOpen ? "block" : "hidden"} border-t-2 border-border bg-white dark:bg-gray-900 relative z-50`}>
+            <li className="bg-white dark:bg-gray-900">
+              <NavLink
+                to="/"
+                onClick={toggleMobileMenu}
+                className={({ isActive }) =>
+                  `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''}`
+                }
+              >
                 Home
-              </a>
+              </NavLink>
             </li>
-            <li>
-              <a href="/#shop" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border">
+            <li className="bg-white dark:bg-gray-900">
+              <a
+                href="/#shop"
+                onClick={toggleMobileMenu}
+                className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border"
+              >
                 Shop
               </a>
             </li>
-            <li>
-              <a href="/about" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border">
+            <li className="bg-white dark:bg-gray-900">
+              <NavLink
+                to="/about"
+                onClick={toggleMobileMenu}
+                className={({ isActive }) =>
+                  `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''}`
+                }
+              >
                 About
-              </a>
+              </NavLink>
             </li>
-            <li>
-              <a href="/#blog" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border">
+            <li className="bg-white dark:bg-gray-900">
+              <a
+                href="/#blog"
+                onClick={toggleMobileMenu}
+                className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border"
+              >
                 Blog
               </a>
             </li>
-            <li>
-              <a href="/contact" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b-2 border-border">
+            <li className="bg-white dark:bg-gray-900">
+              <NavLink
+                to="/contact"
+                onClick={toggleMobileMenu}
+                className={({ isActive }) =>
+                  `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b-2 border-border ${isActive ? 'bg-muted text-primary' : ''}`
+                }
+              >
                 Contact
-              </a>
+              </NavLink>
             </li>
 
             {/* Mobile Actions */}
-            <li className="border-b border-border">
+            <li className="border-b border-border bg-white dark:bg-gray-900">
               <a href="#" className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
                 <User className="h-5 w-5" />
                 <span className="font-semibold">My Account</span>
               </a>
             </li>
-            <li className="border-b border-border">
+            <li className="border-b border-border bg-white dark:bg-gray-900">
               <a href="#" className="flex items-center justify-between py-4 px-4 text-foreground hover:bg-muted transition-all">
                 <div className="flex items-center gap-3">
                   <ShoppingCart className="h-5 w-5" />
@@ -239,7 +306,7 @@ export const Header = () => {
                 </Badge>
               </a>
             </li>
-            <li className="border-b border-border">
+            <li className="border-b border-border bg-white dark:bg-gray-900">
               <a href="#" className="flex items-center justify-between py-4 px-4 text-foreground hover:bg-muted transition-all">
                 <div className="flex items-center gap-3">
                   <Heart className="h-5 w-5" />
@@ -253,7 +320,7 @@ export const Header = () => {
 
             {/* Mobile Features */}
             <li className="py-4 px-4 bg-muted/50">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 bg-white dark:bg-gray-900 p-3 rounded-md">
                 <div className="flex items-center gap-2 text-sm">
                   <Truck className="h-4 w-4 text-primary" />
                   <span className="text-muted-foreground">Free Shipping</span>
@@ -279,7 +346,7 @@ export const Header = () => {
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
           onClick={toggleMobileMenu}
         />
       )}

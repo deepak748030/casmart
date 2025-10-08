@@ -112,6 +112,11 @@ All colors MUST be HSL.
     scroll-behavior: smooth;
   }
 
+  /* Scroll margin for fixed header */
+  section {
+    scroll-margin-top: 120px;
+  }
+
   /* Selection styles */
   ::selection {
     background-color: hsl(var(--primary) / 0.2);

@@ -6,30 +6,30 @@ export const Hero = () => {
   return (
     <section
       id="home"
-      className="relative min-h-[600px] md:min-h-[700px] flex items-center bg-cover bg-center bg-no-repeat"
+      className="relative min-h-[600px] md:min-h-[700px] flex items-center bg-cover bg-center bg-no-repeat pt-8 md:pt-0"
       style={{ backgroundImage: `url(${heroBanner})` }}
     >
       {/* Enhanced gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-transparent" />
 
       {/* Decorative elements */}
-      <div className="absolute top-20 right-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
-      <div className="absolute bottom-20 right-40 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
+      <div className="absolute top-20 right-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-slow hidden md:block" />
+      <div className="absolute bottom-20 right-40 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse-slow hidden md:block" style={{ animationDelay: '1s' }} />
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-2xl">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6 animate-fade-in border border-primary/20">
-            <Sparkles className="h-4 w-4" />
-            <span className="text-sm font-semibold">Fashion Everyday</span>
-            <TrendingUp className="h-4 w-4" />
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-4 md:mb-6 animate-fade-in border border-primary/20">
+            <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="text-xs md:text-sm font-semibold">Fashion Everyday</span>
+            <TrendingUp className="h-3 w-3 md:h-4 md:w-4" />
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight animate-fade-up">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-foreground mb-4 md:mb-6 leading-tight animate-fade-up">
             Unrivalled Fashion House
           </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed animate-fade-up" style={{ animationDelay: '0.2s' }}>
+          <p className="text-base md:text-lg lg:text-xl text-muted-foreground mb-6 md:mb-8 leading-relaxed animate-fade-up" style={{ animationDelay: '0.2s' }}>
             Discover premium collections crafted with passion. Where style meets sophistication.
           </p>
 
@@ -52,18 +52,18 @@ export const Hero = () => {
           </div>
 
           {/* Stats */}
-          <div className="flex flex-wrap gap-8 mt-12 animate-fade-up" style={{ animationDelay: '0.6s' }}>
+          <div className="flex flex-wrap gap-4 md:gap-8 mt-8 md:mt-12 animate-fade-up" style={{ animationDelay: '0.6s' }}>
             <div className="flex flex-col">
-              <span className="text-3xl font-bold text-foreground">10k+</span>
-              <span className="text-sm text-muted-foreground">Happy Customers</span>
+              <span className="text-2xl md:text-3xl font-bold text-foreground">10k+</span>
+              <span className="text-xs md:text-sm text-muted-foreground">Happy Customers</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-3xl font-bold text-foreground">500+</span>
-              <span className="text-sm text-muted-foreground">Premium Products</span>
+              <span className="text-2xl md:text-3xl font-bold text-foreground">500+</span>
+              <span className="text-xs md:text-sm text-muted-foreground">Premium Products</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-3xl font-bold text-foreground">4.9★</span>
-              <span className="text-sm text-muted-foreground">Customer Rating</span>
+              <span className="text-2xl md:text-3xl font-bold text-foreground">4.9★</span>
+              <span className="text-xs md:text-sm text-muted-foreground">Customer Rating</span>
             </div>
           </div>
         </div>
