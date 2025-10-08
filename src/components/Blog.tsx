@@ -42,7 +42,7 @@ export const Blog = () => {
               className="animate-fade-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <article className="bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-strong transition-all duration-500 group hover-lift border border-border/50">
+              <article className="bg-card overflow-hidden shadow-soft hover:shadow-medium transition-all duration-500 group hover-lift border border-border/50">
                 <figure className="relative aspect-[16/11] overflow-hidden bg-muted/30">
                   <a href="#" className="block h-full">
                     <img

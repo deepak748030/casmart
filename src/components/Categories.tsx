@@ -33,7 +33,7 @@ export const Categories = () => {
           {categories.map((category, index) => (
             <li
               key={index}
-              className="group relative overflow-hidden rounded-2xl animate-fade-up hover-lift"
+              className="group relative overflow-hidden animate-fade-up hover-lift border border-border/50"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <figure className="relative aspect-[17/20] overflow-hidden">
@@ -48,7 +48,7 @@ export const Categories = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300" />
 
                 {/* Animated border effect */}
-                <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-all duration-300 rounded-2xl" />
+                <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 transition-all duration-300" />
               </figure>
 
               <div className="absolute inset-0 flex flex-col items-center justify-end p-8 pb-10">

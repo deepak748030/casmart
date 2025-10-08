@@ -148,33 +148,33 @@ export const Header = () => {
       </header>
 
       {/* Sticky Navigation Menu with Features */}
-      <nav className={`${isScrolled ? "fixed top-0 left-0 right-0 shadow-lg" : ""} bg-background border-b-2 border-border z-50 transition-all duration-300`}>
+      <nav className={`${isScrolled ? "fixed top-0 left-0 right-0" : ""} bg-background border-b-2 border-border z-50 transition-all duration-300`}>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             {/* Navigation Links */}
             <ul className={`hidden md:flex items-center justify-center gap-1 py-3 flex-1 ${isMobileMenuOpen ? "hidden" : ""}`}>
               <li>
-                <a href="#home" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
+                <a href="/" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
                   Home
                 </a>
               </li>
               <li>
-                <a href="#shop" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
+                <a href="/#shop" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
                   Shop
                 </a>
               </li>
               <li>
-                <a href="#about" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
+                <a href="/about" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
                   About
                 </a>
               </li>
               <li>
-                <a href="#blog" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
+                <a href="/#blog" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
                   Blog
                 </a>
               </li>
               <li>
-                <a href="#contact" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
+                <a href="/contact" className="px-6 py-2 text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide">
                   Contact
                 </a>
               </li>
@@ -196,31 +196,31 @@ export const Header = () => {
           {/* Mobile Menu */}
           <ul className={`md:hidden ${isMobileMenuOpen ? "block" : "hidden"} border-t-2 border-border bg-background`}>
             <li>
-              <a href="#home" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border">
+              <a href="/" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border">
                 Home
               </a>
             </li>
             <li>
-              <a href="#shop" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border">
+              <a href="/#shop" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border">
                 Shop
               </a>
             </li>
             <li>
-              <a href="#about" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border">
+              <a href="/about" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border">
                 About
               </a>
             </li>
             <li>
-              <a href="#blog" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border">
+              <a href="/#blog" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border">
                 Blog
               </a>
             </li>
             <li>
-              <a href="#contact" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b-2 border-border">
+              <a href="/contact" className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b-2 border-border">
                 Contact
               </a>
             </li>
-            
+
             {/* Mobile Actions */}
             <li className="border-b border-border">
               <a href="#" className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
@@ -250,7 +250,7 @@ export const Header = () => {
                 </Badge>
               </a>
             </li>
-            
+
             {/* Mobile Features */}
             <li className="py-4 px-4 bg-muted/50">
               <div className="grid grid-cols-2 gap-3">

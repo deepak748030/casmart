@@ -6,7 +6,7 @@ export const Newsletter = () => {
   return (
     <section className="py-20">
       <div className="container mx-auto px-4">
-        <div className="relative bg-gradient-to-br from-primary/20 via-accent/10 to-primary/20 rounded-3xl p-8 md:p-12 lg:p-20 text-center overflow-hidden shadow-strong border border-primary/20">
+        <div className="relative bg-gradient-to-br from-primary/20 via-accent/10 to-primary/20 p-8 md:p-12 lg:p-20 text-center overflow-hidden shadow-soft border border-primary/20">
           {/* Animated background pattern */}
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItMnptMC0ydjItMnptLTItMGgyLTJ6bTAtMmgyLTJ6bS0yIDBoMi0yem0wLTJoMi0yem0tMiAwaDItMnptMC0yaDItMnptLTIgMGgyLTJ6bTAtMmgyLTJ6bTItMGgyLTJ6bTAtMmgyLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
 
@@ -35,14 +35,14 @@ export const Newsletter = () => {
                   type="email"
                   placeholder="Enter your email address"
                   required
-                  className="pl-12 h-14 text-base border-2 border-border/50 focus:border-primary rounded-xl shadow-inner-soft"
+                  className="pl-12 h-14 text-base border-2 border-border/50 focus:border-primary shadow-inner-soft"
                 />
               </div>
 
               <Button
                 type="submit"
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground sm:w-auto h-14 px-8 rounded-xl shadow-strong hover:shadow-glow hover:scale-105 transition-all duration-300 group"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground sm:w-auto h-14 px-8 shadow-soft hover:shadow-medium hover:scale-105 transition-all duration-300 group"
               >
                 <span className="font-semibold">Subscribe</span>
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />

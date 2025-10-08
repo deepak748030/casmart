@@ -118,8 +118,8 @@ export const Products = () => {
                 variant={activeFilter === filter ? "default" : "outline"}
                 onClick={() => setActiveFilter(filter)}
                 className={`transition-all duration-300 ${activeFilter === filter
-                    ? "bg-primary text-primary-foreground shadow-glow scale-105"
-                    : "hover:scale-105 hover:border-primary/50"
+                  ? "bg-primary text-primary-foreground shadow-glow scale-105"
+                  : "hover:scale-105 hover:border-primary/50"
                   }`}
               >
                 {filter}
@@ -136,7 +136,7 @@ export const Products = () => {
               className="group animate-fade-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="bg-card rounded-xl overflow-hidden shadow-soft hover:shadow-strong transition-all duration-500 hover:-translate-y-2 border border-border/50">
+              <div className="bg-card overflow-hidden shadow-soft hover:shadow-medium transition-all duration-500 hover:-translate-y-2 border border-border/50">
                 <figure className="relative aspect-[4/5] overflow-hidden bg-muted/30">
                   <a href="#" className="block h-full">
                     <img
@@ -195,8 +195,8 @@ export const Products = () => {
                         <Star
                           key={i}
                           className={`h-3.5 w-3.5 ${i < Math.floor(product.rating)
-                              ? "fill-amber-400 text-amber-400"
-                              : "fill-muted text-muted"
+                            ? "fill-amber-400 text-amber-400"
+                            : "fill-muted text-muted"
                             }`}
                         />
                       ))}
