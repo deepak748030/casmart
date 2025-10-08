@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { Search, ShoppingCart, Heart, User, Menu, X, Phone, Mail, MapPin, IndianRupee, Truck, Shield, Award } from "lucide-react";
+import { ShoppingCart, Heart, User, Menu, X, Phone, Mail, MapPin, IndianRupee, Truck, Shield, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Logo } from "./Logo";
 import { Badge } from "@/components/ui/badge";
 import { NavLink } from "react-router-dom";
+import { SearchBar } from "./SearchBar";
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -70,31 +70,19 @@ export const Header = () => {
 
             {/* Search Bar - Center */}
             <div className="hidden md:block flex-1 max-w-2xl mx-8">
-              <div className="relative">
-                <Input
-                  type="search"
-                  placeholder="Search for products, brands and more..."
-                  className="pr-12 h-11 border-2 focus:border-primary"
-                />
-                <Button
-                  size="icon"
-                  className="absolute right-0 top-0 h-11 w-11"
-                >
-                  <Search className="h-5 w-5" />
-                </Button>
-              </div>
+              <SearchBar />
             </div>
 
             {/* Desktop Actions - Right */}
             <div className="hidden md:flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 hover:bg-muted">
+              <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 hover:bg-muted hover:text-primary transition-colors">
                 <User className="h-5 w-5" />
                 <span className="text-xs font-medium">Account</span>
               </Button>
 
               <div className="w-px h-8 bg-border mx-1" />
 
-              <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 relative hover:bg-muted">
+              <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 relative hover:bg-muted hover:text-primary transition-colors">
                 <div className="relative">
                   <ShoppingCart className="h-5 w-5" />
                   <Badge className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
@@ -106,7 +94,7 @@ export const Header = () => {
 
               <div className="w-px h-8 bg-border mx-1" />
 
-              <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 relative hover:bg-muted">
+              <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 relative hover:bg-muted hover:text-primary transition-colors">
                 <div className="relative">
                   <Heart className="h-5 w-5" />
                   <Badge variant="destructive" className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
@@ -131,20 +119,7 @@ export const Header = () => {
 
           {/* Mobile Search */}
           <div className="md:hidden pb-4">
-            <div className="relative">
-              <Input
-                type="search"
-                placeholder="Search products..."
-                className="pr-12 border-2"
-              />
-              <Button
-                size="icon"
-                variant="ghost"
-                className="absolute right-0 top-0"
-              >
-                <Search className="h-5 w-5" />
-              </Button>
-            </div>
+            <SearchBar isMobile />
           </div>
         </div>
       </header>
