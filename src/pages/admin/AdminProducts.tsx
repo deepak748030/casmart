@@ -1,7 +1,4 @@
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import {
     Table,
     TableBody,
@@ -11,33 +8,8 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Eye, Search, X } from "lucide-react";
 import {
     getAllProducts,
     createProduct,
@@ -45,6 +17,7 @@ import {
     deleteProduct,
     getProductImageUrl,
     type Product,
+    type ProductQueryParams,
 } from "@/api/productApi";
 import { getCategories, type Category } from "@/api/categoryApi";
 import {
@@ -57,57 +30,60 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-const productSchema = z.object({
-    title: z.string().min(1, "Title is required").max(200),
-    description: z.string().min(1, "Description is required"),
-    amount: z.coerce.number().min(0, "Price must be positive"),
-    discountedAmount: z.coerce.number().min(0).optional(),
-    category: z.string().min(1, "Category is required"),
-    sizes: z.string()
-        .min(1, "At least one size required")
-        .regex(/^[a-zA-Z\s,]+$/, "Only letters and commas allowed"),
-    totalStocks: z.coerce.number().min(0, "Stock must be positive"),
-    SKU: z.string().min(1, "SKU is required"),
-});
-
-type ProductFormValues = z.infer<typeof productSchema>;
+import ProductFormDialog from "@/components/admin/ProductFormDialog";
+import ProductPreviewDialog from "@/components/admin/ProductPreviewDialog";
+import { Input } from "@/components/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 export default function AdminProducts() {
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
     const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
     const [submitting, setSubmitting] = useState(false);
-    const [selectedImages, setSelectedImages] = useState<FileList | null>(null);
     const { toast } = useToast();
 
-    const form = useForm<ProductFormValues>({
-        resolver: zodResolver(productSchema),
-        defaultValues: {
-            title: "",
-            description: "",
-            amount: 0,
-            discountedAmount: 0,
-            category: "",
-            sizes: "",
-            totalStocks: 0,
-            SKU: "",
-        },
-    });
+    // Filter states
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState<string>("");
+    const [stockFilter, setStockFilter] = useState<string>("");
+    const [sortBy, setSortBy] = useState<string>("");
+
+    useEffect(() => {
+        loadCategories();
+    }, []);
 
     useEffect(() => {
         loadProducts();
-        loadCategories();
-    }, []);
+    }, [searchQuery, selectedCategory, stockFilter, sortBy]);
 
     const loadProducts = async () => {
         try {
             setLoading(true);
-            const response = await getAllProducts({ limit: 100 });
+            const params: ProductQueryParams = {
+                limit: 100,
+            };
+
+            if (searchQuery) params.search = searchQuery;
+            if (selectedCategory) params.category = selectedCategory;
+            if (stockFilter === "in-stock") params.inStock = true;
+            if (stockFilter === "out-of-stock") params.inStock = false;
+            if (sortBy) params.sort = sortBy;
+
+            const response = await getAllProducts(params);
             setProducts(response.data.products);
         } catch (error) {
             toast({
@@ -131,34 +107,47 @@ export default function AdminProducts() {
 
     const handleCreate = () => {
         setEditingProduct(null);
-        form.reset({
-            title: "",
-            description: "",
-            amount: 0,
-            discountedAmount: 0,
-            category: "",
-            sizes: "",
-            totalStocks: 0,
-            SKU: "",
-        });
-        setSelectedImages(null);
         setDialogOpen(true);
     };
 
-    const handleEdit = (product: Product) => {
-        setEditingProduct(product);
-        form.reset({
-            title: product.title,
-            description: product.description,
-            amount: product.amount,
-            discountedAmount: product.discountedAmount || 0,
-            category: product.category._id,
-            sizes: product.sizes.join(", "),
-            totalStocks: product.totalStocks,
-            SKU: product.SKU,
-        });
-        setSelectedImages(null);
-        setDialogOpen(true);
+    const handleEdit = async (product: Product) => {
+        try {
+            // Fetch full product details to get all images and variants
+            const response = await fetch(`http://localhost:5000/api/products/${product._id}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+            const data = await response.json();
+            setEditingProduct(data.data.product);
+            setDialogOpen(true);
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to load product details",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handlePreview = async (product: Product) => {
+        try {
+            // Fetch full product details
+            const response = await fetch(`http://localhost:5000/api/products/${product._id}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+            const data = await response.json();
+            setPreviewProduct(data.data.product);
+            setPreviewDialogOpen(true);
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to load product details",
+                variant: "destructive",
+            });
+        }
     };
 
     const handleDelete = (product: Product) => {
@@ -187,16 +176,13 @@ export default function AdminProducts() {
         }
     };
 
-    const onSubmit = async (values: ProductFormValues) => {
+    const handleFormSubmit = async (
+        values: any,
+        images: File[],
+        imagesToKeep: number[]
+    ) => {
         try {
             setSubmitting(true);
-
-            // Clean and parse sizes - remove unwanted characters, keep only alphabets
-            const cleanedSizes = values.sizes
-                .replace(/[^a-zA-Z,\s]/g, '') // Remove anything that's not letter, comma, or space
-                .split(',')
-                .map(size => size.trim().toUpperCase())
-                .filter(size => size.length > 0);
 
             const formData = new FormData();
             formData.append("title", values.title);
@@ -206,12 +192,33 @@ export default function AdminProducts() {
                 formData.append("discountedAmount", values.discountedAmount.toString());
             }
             formData.append("category", values.category);
-            formData.append("sizes", JSON.stringify(cleanedSizes));
+            formData.append("sizes", JSON.stringify(values.sizes));
             formData.append("totalStocks", values.totalStocks.toString());
             formData.append("SKU", values.SKU);
 
-            if (selectedImages) {
-                Array.from(selectedImages).forEach((file) => {
+            // Add variants
+            if (values.variants && values.variants.length > 0) {
+                formData.append("variants", JSON.stringify(values.variants));
+            }
+
+            // Add specifications
+            if (values.specifications && values.specifications.length > 0) {
+                formData.append("specifications", JSON.stringify(values.specifications));
+            }
+
+            // Add key features
+            if (values.keyFeatures && values.keyFeatures.length > 0) {
+                formData.append("keyFeatures", JSON.stringify(values.keyFeatures));
+            }
+
+            // Add images to keep (for update)
+            if (editingProduct && imagesToKeep.length > 0) {
+                formData.append("imagesToKeep", JSON.stringify(imagesToKeep));
+            }
+
+            // Add new images
+            if (images && images.length > 0) {
+                images.forEach((file) => {
                     formData.append("images", file);
                 });
             }
@@ -232,16 +239,25 @@ export default function AdminProducts() {
 
             setDialogOpen(false);
             loadProducts();
-        } catch (error) {
+        } catch (error: any) {
             toast({
                 title: "Error",
-                description: `Failed to ${editingProduct ? "update" : "create"} product`,
+                description: error.response?.data?.message || `Failed to ${editingProduct ? "update" : "create"} product`,
                 variant: "destructive",
             });
         } finally {
             setSubmitting(false);
         }
     };
+
+    const clearFilters = () => {
+        setSearchQuery("");
+        setSelectedCategory("");
+        setStockFilter("");
+        setSortBy("");
+    };
+
+    const hasActiveFilters = searchQuery || selectedCategory || stockFilter || sortBy;
 
     return (
         <div className="space-y-6">
@@ -256,6 +272,92 @@ export default function AdminProducts() {
                 </Button>
             </div>
 
+            {/* Filters */}
+            <Card className="p-4">
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="font-semibold">Filters</h3>
+                        {hasActiveFilters && (
+                            <Button variant="ghost" size="sm" onClick={clearFilters}>
+                                <X className="mr-2 h-4 w-4" />
+                                Clear Filters
+                            </Button>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* Search */}
+                        <div>
+                            <label className="text-sm font-medium mb-2 block">Search</label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search products..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-10"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Category Filter */}
+                        <div>
+                            <label className="text-sm font-medium mb-2 block">Category</label>
+                            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="All categories" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="">All categories</SelectItem>
+                                    {categories.map((category) => (
+                                        <SelectItem key={category._id} value={category._id}>
+                                            {category.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Stock Filter */}
+                        <div>
+                            <label className="text-sm font-medium mb-2 block">Stock Status</label>
+                            <Select value={stockFilter} onValueChange={setStockFilter}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="All products" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="">All products</SelectItem>
+                                    <SelectItem value="in-stock">In Stock</SelectItem>
+                                    <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Sort */}
+                        <div>
+                            <label className="text-sm font-medium mb-2 block">Sort By</label>
+                            <Select value={sortBy} onValueChange={setSortBy}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Default" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="">Default</SelectItem>
+                                    <SelectItem value="title">Name (A-Z)</SelectItem>
+                                    <SelectItem value="-title">Name (Z-A)</SelectItem>
+                                    <SelectItem value="amount">Price (Low to High)</SelectItem>
+                                    <SelectItem value="-amount">Price (High to Low)</SelectItem>
+                                    <SelectItem value="-createdAt">Newest First</SelectItem>
+                                    <SelectItem value="createdAt">Oldest First</SelectItem>
+                                    <SelectItem value="-totalStocks">Stock (High to Low)</SelectItem>
+                                    <SelectItem value="totalStocks">Stock (Low to High)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                </div>
+            </Card>
+
+            {/* Products Table */}
             {loading ? (
                 <div className="flex justify-center items-center h-64">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -278,8 +380,15 @@ export default function AdminProducts() {
                         <TableBody>
                             {products.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                                    <TableCell colSpan={8} className="text-center text-muted-foreground h-32">
                                         No products found
+                                        {hasActiveFilters && (
+                                            <div className="mt-2">
+                                                <Button variant="link" onClick={clearFilters}>
+                                                    Clear filters
+                                                </Button>
+                                            </div>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -290,45 +399,65 @@ export default function AdminProducts() {
                                                 src={getProductImageUrl(product._id, 0)}
                                                 alt={product.title}
                                                 className="w-12 h-12 object-cover rounded"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = "/placeholder.svg";
+                                                }}
                                             />
                                         </TableCell>
-                                        <TableCell className="font-medium">{product.title}</TableCell>
-                                        <TableCell>{product.SKU}</TableCell>
+                                        <TableCell className="font-medium max-w-xs truncate">
+                                            {product.title}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline">{product.SKU}</Badge>
+                                        </TableCell>
                                         <TableCell>{product.category.name}</TableCell>
                                         <TableCell>
-                                            ₹{product.discountedAmount || product.amount}
-                                            {product.discountedAmount && (
-                                                <span className="text-xs text-muted-foreground line-through ml-2">
-                                                    ₹{product.amount}
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">
+                                                    ₹{product.discountedAmount || product.amount}
                                                 </span>
-                                            )}
+                                                {product.discountedAmount && product.discountedAmount < product.amount && (
+                                                    <span className="text-xs text-muted-foreground line-through">
+                                                        ₹{product.amount}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell>{product.totalStocks}</TableCell>
                                         <TableCell>
-                                            <span
-                                                className={`px-2 py-1 rounded-full text-xs ${product.inStock
-                                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                                        : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                                                    }`}
+                                            <Badge
+                                                variant={product.inStock ? "default" : "destructive"}
                                             >
                                                 {product.inStock ? "In Stock" : "Out of Stock"}
-                                            </span>
+                                            </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right space-x-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleEdit(product)}
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleDelete(product)}
-                                            >
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handlePreview(product)}
+                                                    title="Preview"
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleEdit(product)}
+                                                    title="Edit"
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleDelete(product)}
+                                                    title="Delete"
+                                                >
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -339,209 +468,34 @@ export default function AdminProducts() {
             )}
 
             {/* Create/Edit Dialog */}
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>
-                            {editingProduct ? "Edit Product" : "Create Product"}
-                        </DialogTitle>
-                        <DialogDescription>
-                            {editingProduct
-                                ? "Update product information"
-                                : "Add a new product to your catalog"}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                            <FormField
-                                control={form.control}
-                                name="title"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Title</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Product title" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+            <ProductFormDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                editingProduct={editingProduct}
+                categories={categories}
+                onSubmit={handleFormSubmit}
+                submitting={submitting}
+            />
 
-                            <FormField
-                                control={form.control}
-                                name="description"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Description</FormLabel>
-                                        <FormControl>
-                                            <Textarea
-                                                placeholder="Product description"
-                                                className="min-h-[100px]"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="amount"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Price (₹)</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" placeholder="0" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="discountedAmount"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Discounted Price (₹)</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" placeholder="0" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <FormField
-                                control={form.control}
-                                name="category"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Category</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select a category" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {categories.map((category) => (
-                                                    <SelectItem key={category._id} value={category._id}>
-                                                        {category.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="sizes"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Sizes</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="S, M, L, XL"
-                                                    {...field}
-                                                    onChange={(e) => {
-                                                        // Remove unwanted characters on input
-                                                        const cleaned = e.target.value.replace(/[^a-zA-Z,\s]/g, '');
-                                                        field.onChange(cleaned);
-                                                    }}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                            <p className="text-xs text-muted-foreground">
-                                                Enter sizes separated by commas (letters only)
-                                            </p>
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="totalStocks"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Stock</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" placeholder="0" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <FormField
-                                control={form.control}
-                                name="SKU"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>SKU</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="PROD-001" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <div className="space-y-2">
-                                <FormLabel>Product Images</FormLabel>
-                                <Input
-                                    type="file"
-                                    accept="image/*"
-                                    multiple
-                                    onChange={(e) => setSelectedImages(e.target.files)}
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    Upload product images (optional)
-                                </p>
-                            </div>
-
-                            <DialogFooter>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setDialogOpen(false)}
-                                    disabled={submitting}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={submitting}>
-                                    {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {editingProduct ? "Update" : "Create"}
-                                </Button>
-                            </DialogFooter>
-                        </form>
-                    </Form>
-                </DialogContent>
-            </Dialog>
+            {/* Preview Dialog */}
+            <ProductPreviewDialog
+                product={previewProduct}
+                open={previewDialogOpen}
+                onOpenChange={setPreviewDialogOpen}
+            />
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete "{deletingProduct?.title}"? This
-                            action cannot be undone.
+                            This will delete "{deletingProduct?.title}". This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
-                            Delete
-                        </AlertDialogAction>
+                        <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
