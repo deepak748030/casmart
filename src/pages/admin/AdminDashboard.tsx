@@ -1,7 +1,50 @@
-import { Users, Package, ShoppingCart, TrendingUp } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Users, Package, ShoppingCart, TrendingUp, Activity, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { getActivityLogs, ActivityLog } from "@/api/activityApi";
+import { format } from "date-fns";
 
 export default function AdminDashboard() {
+    const [recentActivities, setRecentActivities] = useState<ActivityLog[]>([]);
+    const [loadingActivities, setLoadingActivities] = useState(true);
+
+    useEffect(() => {
+        fetchRecentActivities();
+    }, []);
+
+    const fetchRecentActivities = async () => {
+        try {
+            setLoadingActivities(true);
+            const response = await getActivityLogs({ limit: 10 });
+            setRecentActivities(response.data.activities);
+        } catch (error) {
+            console.error('Error fetching activities:', error);
+        } finally {
+            setLoadingActivities(false);
+        }
+    };
+
+    const getMethodBadge = (method: string) => {
+        const colors: Record<string, string> = {
+            GET: "bg-blue-500",
+            POST: "bg-green-500",
+            PUT: "bg-yellow-500",
+            PATCH: "bg-orange-500",
+            DELETE: "bg-red-500",
+        };
+        return <Badge className={`${colors[method]} text-white text-xs`}>{method}</Badge>;
+    };
+
+    const getStatusBadge = (statusCode: number) => {
+        if (statusCode >= 200 && statusCode < 300) {
+            return <Badge className="bg-green-500 text-white text-xs">{statusCode}</Badge>;
+        } else if (statusCode >= 400) {
+            return <Badge variant="destructive" className="text-xs">{statusCode}</Badge>;
+        }
+        return <Badge variant="secondary" className="text-xs">{statusCode}</Badge>;
+    };
+
     const stats = [
         {
             title: "Total Users",
@@ -68,25 +111,46 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-border">
                     <CardHeader>
-                        <CardTitle className="text-foreground">Recent Orders</CardTitle>
+                        <CardTitle className="text-foreground flex items-center gap-2">
+                            <Activity className="h-5 w-5" />
+                            Recent API Activity
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
-                            {[1, 2, 3, 4, 5].map((i) => (
-                                <div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                                    <div>
-                                        <p className="font-medium text-foreground">Order #{1000 + i}</p>
-                                        <p className="text-sm text-muted-foreground">Customer Name {i}</p>
+                        {loadingActivities ? (
+                            <div className="text-center py-8">
+                                <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-primary border-r-transparent"></div>
+                            </div>
+                        ) : recentActivities.length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground">
+                                No recent activity
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {recentActivities.map((activity) => (
+                                    <div key={activity._id} className="flex items-start justify-between py-2 border-b border-border last:border-0">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                {getMethodBadge(activity.method)}
+                                                {getStatusBadge(activity.statusCode)}
+                                            </div>
+                                            <p className="text-sm font-mono text-foreground truncate">
+                                                {activity.endpoint}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {activity.user?.name || 'Anonymous'} • {format(new Date(activity.createdAt), 'MMM dd, HH:mm')}
+                                            </p>
+                                        </div>
+                                        {activity.responseTime && (
+                                            <div className="flex items-center gap-1 text-xs text-muted-foreground ml-2">
+                                                <Clock className="h-3 w-3" />
+                                                {activity.responseTime}ms
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="text-right">
-                                        <p className="font-medium text-foreground">₹{(Math.random() * 5000 + 1000).toFixed(2)}</p>
-                                        <span className="text-xs bg-green-100 dark:bg-green-900/20 text-green-600 px-2 py-1 rounded">
-                                            Completed
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
