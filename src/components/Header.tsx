@@ -5,10 +5,12 @@ import { Logo } from "./Logo";
 import { Badge } from "@/components/ui/badge";
 import { NavLink, Link } from "react-router-dom";
 import { SearchBar } from "./SearchBar";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,10 +77,10 @@ export const Header = () => {
 
             {/* Desktop Actions - Right */}
             <div className="hidden md:flex items-center gap-2">
-              <Link to="/login">
+              <Link to={user ? "/profile" : "/login"}>
                 <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 hover:bg-muted hover:text-primary transition-colors">
                   <User className="h-5 w-5" />
-                  <span className="text-xs font-medium">Account</span>
+                  <span className="text-xs font-medium">{user ? 'Profile' : 'Account'}</span>
                 </Button>
               </Link>
 
@@ -267,9 +269,9 @@ export const Header = () => {
 
             {/* Mobile Actions */}
             <li className="border-b border-border bg-background">
-              <Link to="/login" onClick={toggleMobileMenu} className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
+              <Link to={user ? "/profile" : "/login"} onClick={toggleMobileMenu} className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
                 <User className="h-5 w-5" />
-                <span className="font-semibold">My Account</span>
+                <span className="font-semibold">{user ? 'My Profile' : 'My Account'}</span>
               </Link>
             </li>
             <li className="border-b border-border bg-background">

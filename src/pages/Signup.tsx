@@ -1,18 +1,71 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
+import { useToast } from "@/hooks/use-toast";
+import { signup, ApiError } from "@/api/authApi";
 import signupIllustration from "@/assets/signup-illustration.jpg";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Signup = () => {
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const { toast } = useToast();
+    const navigate = useNavigate();
+    const { user, refreshUser } = useAuth();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    useEffect(() => {
+        if (user) {
+            navigate('/profile');
+        }
+    }, [user, navigate]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Signup attempt:", { email, password });
+        setIsLoading(true);
+
+        try {
+            const response = await signup({ name, email, password });
+            await refreshUser();
+
+            toast({
+                title: "Account created successfully",
+                description: `Welcome, ${response.data.user.name}!`,
+            });
+
+            navigate("/profile");
+        } catch (error) {
+            if (error instanceof ApiError) {
+                // Handle validation errors
+                if (error.errors && error.errors.length > 0) {
+                    error.errors.forEach((err) => {
+                        toast({
+                            title: "Validation Error",
+                            description: err.msg,
+                            variant: "destructive",
+                        });
+                    });
+                } else {
+                    toast({
+                        title: "Signup Failed",
+                        description: error.message,
+                        variant: "destructive",
+                    });
+                }
+            } else {
+                toast({
+                    title: "Error",
+                    description: "An unexpected error occurred. Please try again.",
+                    variant: "destructive",
+                });
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -43,6 +96,21 @@ const Signup = () => {
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
+                            <Label htmlFor="name">Full Name</Label>
+                            <Input
+                                id="name"
+                                type="text"
+                                placeholder="John Doe"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                                minLength={2}
+                                maxLength={50}
+                                disabled={isLoading}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
                             <Input
                                 id="email"
@@ -51,6 +119,7 @@ const Signup = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
+                                disabled={isLoading}
                             />
                         </div>
 
@@ -64,12 +133,15 @@ const Signup = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 minLength={8}
+                                disabled={isLoading}
                             />
-                            <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
+                            <p className="text-xs text-muted-foreground">
+                                Must be at least 8 characters with uppercase, lowercase, number, and special character
+                            </p>
                         </div>
 
-                        <Button type="submit" className="w-full" size="lg">
-                            Create Account
+                        <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                            {isLoading ? "Creating Account..." : "Create Account"}
                         </Button>
 
                         <div className="text-center text-sm">
