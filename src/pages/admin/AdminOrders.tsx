@@ -284,6 +284,7 @@ export default function AdminOrders() {
                 order={selectedOrder}
                 open={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
+                onOrderUpdate={fetchOrders}
             />
         </div>
     );

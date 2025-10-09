@@ -41,7 +41,7 @@ export default function AdminLayout() {
         { to: "/admin/products", icon: Box, label: "Products" },
         { to: "/admin/categories", icon: Package, label: "Categories" },
         { to: "/admin/orders", icon: ShoppingCart, label: "Orders" },
-        { to: "/admin/activity", icon: Activity, label: "Activity Logs" },
+
     ];
 
     return (
