@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Eye, ShoppingBag, Heart, IndianRupee, Star } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { getAllProducts, getProductImageUrl, Product } from "@/api/productApi";
+import { useCart } from "@/contexts/CartContext";
 
 const filters = ["Best Seller", "Hot Collection", "Trendy", "New Arrival"];
 
@@ -12,6 +13,8 @@ export const Products = () => {
   const [activeFilter, setActiveFilter] = useState("Best Seller");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { addToCart, addToWishlist, isInWishlist } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProducts();
@@ -148,6 +151,10 @@ export const Products = () => {
                         size="icon"
                         variant="secondary"
                         className="rounded-full shadow-strong backdrop-blur-sm bg-white/90 hover:bg-white h-10 w-10"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate(`/product/${product._id}`);
+                        }}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -158,6 +165,19 @@ export const Products = () => {
                       <Button
                         variant="secondary"
                         className="flex items-center gap-2 shadow-strong bg-white hover:bg-white/95 text-foreground font-semibold transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-75"
+                        disabled={!product.inStock}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          addToCart({
+                            _id: product._id,
+                            title: product.title,
+                            amount: product.amount,
+                            discountedAmount: product.discountedAmount,
+                            imageUrl: imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
+                            category: product.category.name,
+                            inStock: product.inStock,
+                          }, 1);
+                        }}
                       >
                         <ShoppingBag className="h-4 w-4" />
                         <span>Add to Cart</span>
@@ -166,9 +186,22 @@ export const Products = () => {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="rounded-full text-white hover:text-destructive hover:bg-white/90 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100"
+                        className={`rounded-full hover:bg-white/90 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100 ${isInWishlist(product._id) ? "text-destructive" : "text-white hover:text-destructive"
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          addToWishlist({
+                            _id: product._id,
+                            title: product.title,
+                            amount: product.amount,
+                            discountedAmount: product.discountedAmount,
+                            imageUrl: imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
+                            category: product.category.name,
+                            inStock: product.inStock,
+                          });
+                        }}
                       >
-                        <Heart className="h-5 w-5" />
+                        <Heart className={`h-5 w-5 ${isInWishlist(product._id) ? "fill-current" : ""}`} />
                       </Button>
                     </div>
                   </figure>

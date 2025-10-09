@@ -58,9 +58,9 @@ export default function AdminProducts() {
 
     // Filter states
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState<string>("");
-    const [stockFilter, setStockFilter] = useState<string>("");
-    const [sortBy, setSortBy] = useState<string>("");
+    const [selectedCategory, setSelectedCategory] = useState<string>("all");
+    const [stockFilter, setStockFilter] = useState<string>("all");
+    const [sortBy, setSortBy] = useState<string>("all");
 
     useEffect(() => {
         loadCategories();
@@ -78,10 +78,10 @@ export default function AdminProducts() {
             };
 
             if (searchQuery) params.search = searchQuery;
-            if (selectedCategory) params.category = selectedCategory;
+            if (selectedCategory && selectedCategory !== "all") params.category = selectedCategory;
             if (stockFilter === "in-stock") params.inStock = true;
             if (stockFilter === "out-of-stock") params.inStock = false;
-            if (sortBy) params.sort = sortBy;
+            if (sortBy && sortBy !== "all") params.sort = sortBy;
 
             const response = await getAllProducts(params);
             setProducts(response.data.products);
@@ -252,12 +252,12 @@ export default function AdminProducts() {
 
     const clearFilters = () => {
         setSearchQuery("");
-        setSelectedCategory("");
-        setStockFilter("");
-        setSortBy("");
+        setSelectedCategory("all");
+        setStockFilter("all");
+        setSortBy("all");
     };
 
-    const hasActiveFilters = searchQuery || selectedCategory || stockFilter || sortBy;
+    const hasActiveFilters = searchQuery || (selectedCategory !== "all") || (stockFilter !== "all") || (sortBy !== "all");
 
     return (
         <div className="space-y-6">
@@ -308,7 +308,7 @@ export default function AdminProducts() {
                                     <SelectValue placeholder="All categories" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">All categories</SelectItem>
+                                    <SelectItem value="all">All categories</SelectItem>
                                     {categories.map((category) => (
                                         <SelectItem key={category._id} value={category._id}>
                                             {category.name}
@@ -326,7 +326,7 @@ export default function AdminProducts() {
                                     <SelectValue placeholder="All products" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">All products</SelectItem>
+                                    <SelectItem value="all">All products</SelectItem>
                                     <SelectItem value="in-stock">In Stock</SelectItem>
                                     <SelectItem value="out-of-stock">Out of Stock</SelectItem>
                                 </SelectContent>
@@ -341,7 +341,7 @@ export default function AdminProducts() {
                                     <SelectValue placeholder="Default" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">Default</SelectItem>
+                                    <SelectItem value="all">Default</SelectItem>
                                     <SelectItem value="title">Name (A-Z)</SelectItem>
                                     <SelectItem value="-title">Name (Z-A)</SelectItem>
                                     <SelectItem value="amount">Price (Low to High)</SelectItem>

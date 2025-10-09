@@ -6,11 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { NavLink, Link } from "react-router-dom";
 import { SearchBar } from "./SearchBar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuth();
+  const { getCartCount, getWishlistCount } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -86,27 +88,35 @@ export const Header = () => {
 
               <div className="w-px h-8 bg-border mx-1" />
 
-              <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 relative hover:bg-muted hover:text-primary transition-colors">
-                <div className="relative">
-                  <ShoppingCart className="h-5 w-5" />
-                  <Badge className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
-                    3
-                  </Badge>
-                </div>
-                <span className="text-xs font-medium">Cart</span>
-              </Button>
+              <Link to="/cart">
+                <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 relative hover:bg-muted hover:text-primary transition-colors">
+                  <div className="relative">
+                    <ShoppingCart className="h-5 w-5" />
+                    {getCartCount() > 0 && (
+                      <Badge className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
+                        {getCartCount()}
+                      </Badge>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium">Cart</span>
+                </Button>
+              </Link>
 
               <div className="w-px h-8 bg-border mx-1" />
 
-              <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 relative hover:bg-muted hover:text-primary transition-colors">
-                <div className="relative">
-                  <Heart className="h-5 w-5" />
-                  <Badge variant="destructive" className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
-                    2
-                  </Badge>
-                </div>
-                <span className="text-xs font-medium">Wishlist</span>
-              </Button>
+              <Link to="/wishlist">
+                <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 relative hover:bg-muted hover:text-primary transition-colors">
+                  <div className="relative">
+                    <Heart className="h-5 w-5" />
+                    {getWishlistCount() > 0 && (
+                      <Badge variant="destructive" className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
+                        {getWishlistCount()}
+                      </Badge>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium">Wishlist</span>
+                </Button>
+              </Link>
             </div>
 
             {/* Mobile Menu Button */}
@@ -295,26 +305,30 @@ export const Header = () => {
               </li>
             )}
             <li className="border-b border-border bg-background">
-              <a href="#" className="flex items-center justify-between py-4 px-4 text-foreground hover:bg-muted transition-all">
+              <Link to="/cart" onClick={toggleMobileMenu} className="flex items-center justify-between py-4 px-4 text-foreground hover:bg-muted transition-all">
                 <div className="flex items-center gap-3">
                   <ShoppingCart className="h-5 w-5" />
                   <span className="font-semibold">Shopping Cart</span>
                 </div>
-                <Badge className="h-6 w-6 p-0 flex items-center justify-center">
-                  3
-                </Badge>
-              </a>
+                {getCartCount() > 0 && (
+                  <Badge className="h-6 w-6 p-0 flex items-center justify-center">
+                    {getCartCount()}
+                  </Badge>
+                )}
+              </Link>
             </li>
             <li className="border-b border-border bg-background">
-              <a href="#" className="flex items-center justify-between py-4 px-4 text-foreground hover:bg-muted transition-all">
+              <Link to="/wishlist" onClick={toggleMobileMenu} className="flex items-center justify-between py-4 px-4 text-foreground hover:bg-muted transition-all">
                 <div className="flex items-center gap-3">
                   <Heart className="h-5 w-5" />
                   <span className="font-semibold">Wishlist</span>
                 </div>
-                <Badge variant="destructive" className="h-6 w-6 p-0 flex items-center justify-center">
-                  2
-                </Badge>
-              </a>
+                {getWishlistCount() > 0 && (
+                  <Badge variant="destructive" className="h-6 w-6 p-0 flex items-center justify-center">
+                    {getWishlistCount()}
+                  </Badge>
+                )}
+              </Link>
             </li>
 
             {/* Mobile Features */}
