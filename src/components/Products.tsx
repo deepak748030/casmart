@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Eye, ShoppingBag, Heart, IndianRupee, Star } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
@@ -105,7 +106,7 @@ export const Products = () => {
               >
                 <div className="bg-card overflow-hidden shadow-soft hover:shadow-medium transition-all duration-500 hover:-translate-y-2 border border-border/50">
                   <figure className="relative aspect-[4/5] overflow-hidden bg-muted/30">
-                    <a href={`/product/${product._id}`} className="block h-full">
+                    <Link to={`/product/${product._id}`} className="block h-full">
                       {imageUrl ? (
                         <img
                           src={imageUrl}
@@ -121,7 +122,7 @@ export const Products = () => {
                           <ShoppingBag className="h-16 w-16 text-muted-foreground/30" />
                         </div>
                       )}
-                    </a>
+                    </Link>
 
                     {badge && (
                       <Badge
@@ -192,9 +193,9 @@ export const Products = () => {
                     </div>
 
                     <h3 className="font-semibold text-foreground line-clamp-2 leading-snug">
-                      <a href={`/product/${product._id}`} className="hover:text-primary transition-colors">
+                      <Link to={`/product/${product._id}`} className="hover:text-primary transition-colors">
                         {product.title}
-                      </a>
+                      </Link>
                     </h3>
 
                     <div className="flex items-center gap-2 pt-1">

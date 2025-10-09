@@ -3,7 +3,7 @@ import { Outlet, useNavigate, NavLink } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { Users, Package, ShoppingCart, LayoutDashboard, LogOut, Menu, X, Activity } from "lucide-react";
+import { Users, Package, ShoppingCart, LayoutDashboard, LogOut, Menu, X, Activity, Box } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +38,7 @@ export default function AdminLayout() {
     const menuItems = [
         { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
         { to: "/admin/users", icon: Users, label: "Users" },
+        { to: "/admin/products", icon: Box, label: "Products" },
         { to: "/admin/categories", icon: Package, label: "Categories" },
         { to: "/admin/orders", icon: ShoppingCart, label: "Orders" },
         { to: "/admin/activity", icon: Activity, label: "Activity Logs" },

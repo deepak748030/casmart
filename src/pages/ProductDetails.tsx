@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,10 @@ import {
     Truck,
     Shield,
     RotateCcw,
+    Loader2,
 } from "lucide-react";
+import { getProductById, getProductImageUrl, type Product } from "@/api/productApi";
+import { useToast } from "@/hooks/use-toast";
 import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
@@ -110,15 +113,74 @@ const reviews = [
 
 export default function ProductDetails() {
     const navigate = useNavigate();
+    const { id } = useParams();
+    const { toast } = useToast();
+
+    const [product, setProduct] = useState<Product | null>(null);
+    const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
-    const [selectedColor, setSelectedColor] = useState(product.colors[0].name);
-    const [selectedSize, setSelectedSize] = useState(product.sizes[1]);
+    const [selectedSize, setSelectedSize] = useState("");
     const [isWishlisted, setIsWishlisted] = useState(false);
 
-    const discount = Math.round(
-        ((product.oldPrice - product.price) / product.oldPrice) * 100
-    );
+    useEffect(() => {
+        if (id) {
+            fetchProduct();
+        }
+    }, [id]);
+
+    const fetchProduct = async () => {
+        try {
+            setLoading(true);
+            const response = await getProductById(id!);
+            setProduct(response.data.product);
+            if (response.data.product.sizes.length > 0) {
+                setSelectedSize(response.data.product.sizes[0]);
+            }
+        } catch (error: any) {
+            console.error("Error fetching product:", error);
+            toast({
+                title: "Error",
+                description: "Failed to load product",
+                variant: "destructive",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <>
+                <Header />
+                <div className="min-h-screen flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            </>
+        );
+    }
+
+    if (!product) {
+        return (
+            <>
+                <Header />
+                <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center">
+                        <h2 className="text-2xl font-bold mb-4">Product not found</h2>
+                        <Button onClick={() => navigate("/")}>Go to Home</Button>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
+    const discount = product.discountedAmount && product.amount
+        ? Math.round(((product.amount - product.discountedAmount) / product.amount) * 100)
+        : 0;
+
+    const productImages = product.imageUrls && product.imageUrls.length > 0
+        ? product.imageUrls.map(url => `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${url}`)
+        : [getProductImageUrl(product._id, 0)];
 
     return (
         <>
@@ -134,8 +196,11 @@ export default function ProductDetails() {
                             <div className="relative aspect-square bg-muted/30 overflow-hidden">
                                 <img
                                     src={productImages[selectedImage]}
-                                    alt={product.name}
+                                    alt={product.title}
                                     className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.currentTarget.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+                                    }}
                                 />
                                 {discount > 0 && (
                                     <Badge
@@ -148,34 +213,39 @@ export default function ProductDetails() {
                             </div>
 
                             {/* Thumbnail Grid */}
-                            <div className="grid grid-cols-4 gap-2 md:gap-4">
-                                {productImages.map((image, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setSelectedImage(index)}
-                                        className={`aspect-square bg-muted/30 overflow-hidden transition-all duration-300 ${selectedImage === index
-                                            ? "ring-2 ring-primary scale-95"
-                                            : "hover:opacity-80"
-                                            }`}
-                                    >
-                                        <img
-                                            src={image}
-                                            alt={`${product.name} view ${index + 1}`}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </button>
-                                ))}
-                            </div>
+                            {productImages.length > 1 && (
+                                <div className="grid grid-cols-4 gap-2 md:gap-4">
+                                    {productImages.map((image, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => setSelectedImage(index)}
+                                            className={`aspect-square bg-muted/30 overflow-hidden transition-all duration-300 ${selectedImage === index
+                                                ? "ring-2 ring-primary scale-95"
+                                                : "hover:opacity-80"
+                                                }`}
+                                        >
+                                            <img
+                                                src={image}
+                                                alt={`${product.title} view ${index + 1}`}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+                                                }}
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Product Info */}
                         <div className="space-y-3 md:space-y-6">
                             <div>
                                 <p className="text-sm text-muted-foreground mb-1 md:mb-2">
-                                    {product.category}
+                                    {product.category.name}
                                 </p>
                                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 leading-tight">
-                                    {product.name}
+                                    {product.title}
                                 </h1>
 
                                 {/* Rating */}
@@ -185,7 +255,7 @@ export default function ProductDetails() {
                                             {[...Array(5)].map((_, i) => (
                                                 <Star
                                                     key={i}
-                                                    className={`h-4 w-4 md:h-5 md:w-5 ${i < Math.floor(product.rating)
+                                                    className={`h-4 w-4 md:h-5 md:w-5 ${i < Math.floor(product.averageRating)
                                                         ? "fill-amber-400 text-amber-400"
                                                         : "fill-muted text-muted"
                                                         }`}
@@ -193,10 +263,10 @@ export default function ProductDetails() {
                                             ))}
                                         </div>
                                         <span className="text-sm font-semibold">
-                                            {product.rating}
+                                            {product.averageRating}
                                         </span>
                                         <span className="text-xs md:text-sm text-muted-foreground">
-                                            ({product.reviews} reviews)
+                                            ({product.numOfReviews} reviews)
                                         </span>
                                     </div>
                                 </div>
@@ -206,22 +276,22 @@ export default function ProductDetails() {
                                     <div className="flex items-center">
                                         <IndianRupee className="h-5 w-5 md:h-6 md:w-6 text-foreground" />
                                         <span className="text-3xl md:text-4xl font-bold text-foreground">
-                                            {product.price.toLocaleString("en-IN")}
+                                            {(product.discountedAmount || product.amount).toLocaleString("en-IN")}
                                         </span>
                                     </div>
-                                    {product.oldPrice && (
+                                    {product.discountedAmount && product.discountedAmount < product.amount && (
                                         <div className="flex items-center">
                                             <IndianRupee className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground" />
                                             <span className="text-lg md:text-xl text-muted-foreground line-through">
-                                                {product.oldPrice.toLocaleString("en-IN")}
+                                                {product.amount.toLocaleString("en-IN")}
                                             </span>
                                         </div>
                                     )}
                                 </div>
 
-                                {product.oldPrice && (
+                                {product.discountedAmount && product.discountedAmount < product.amount && (
                                     <p className="text-accent font-semibold mb-4 md:mb-6 text-sm md:text-base">
-                                        You save ₹{(product.oldPrice - product.price).toLocaleString("en-IN")} ({discount}% off)
+                                        You save ₹{(product.amount - product.discountedAmount).toLocaleString("en-IN")} ({discount}% off)
                                     </p>
                                 )}
 
@@ -230,48 +300,30 @@ export default function ProductDetails() {
                                 </p>
                             </div>
 
-                            {/* Color Selection */}
-                            <div>
-                                <label className="block text-sm font-semibold mb-3">
-                                    Color: <span className="text-foreground">{selectedColor}</span>
-                                </label>
-                                <div className="flex gap-3">
-                                    {product.colors.map((color) => (
-                                        <button
-                                            key={color.name}
-                                            onClick={() => setSelectedColor(color.name)}
-                                            className={`w-12 h-12 border-2 transition-all duration-300 ${selectedColor === color.name
-                                                ? "border-primary scale-110"
-                                                : "border-border hover:border-primary/50"
-                                                }`}
-                                            style={{ backgroundColor: color.value }}
-                                            aria-label={color.name}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
 
                             {/* Size Selection */}
-                            <div>
-                                <label className="block text-sm font-semibold mb-3">
-                                    Size: <span className="text-foreground">{selectedSize}</span>
-                                </label>
-                                <div className="flex gap-3">
-                                    {product.sizes.map((size) => (
-                                        <Button
-                                            key={size}
-                                            variant={selectedSize === size ? "default" : "outline"}
-                                            onClick={() => setSelectedSize(size)}
-                                            className={`min-w-[80px] transition-all duration-300 ${selectedSize === size
-                                                ? "shadow-glow scale-105"
-                                                : "hover:scale-105"
-                                                }`}
-                                        >
-                                            {size}
-                                        </Button>
-                                    ))}
+                            {product.sizes && product.sizes.length > 0 && (
+                                <div>
+                                    <label className="block text-sm font-semibold mb-3">
+                                        Size: <span className="text-foreground">{selectedSize}</span>
+                                    </label>
+                                    <div className="flex gap-3 flex-wrap">
+                                        {product.sizes.map((size) => (
+                                            <Button
+                                                key={size}
+                                                variant={selectedSize === size ? "default" : "outline"}
+                                                onClick={() => setSelectedSize(size)}
+                                                className={`min-w-[80px] transition-all duration-300 ${selectedSize === size
+                                                    ? "shadow-glow scale-105"
+                                                    : "hover:scale-105"
+                                                    }`}
+                                            >
+                                                {size}
+                                            </Button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Quantity */}
                             <div>
@@ -381,18 +433,22 @@ export default function ProductDetails() {
                                 <p className="text-foreground/80 leading-relaxed mb-6">
                                     {product.description}
                                 </p>
-                                <h4 className="text-xl font-semibold mb-4">Key Features</h4>
-                                <ul className="space-y-3">
-                                    {product.features.map((feature, index) => (
-                                        <li
-                                            key={index}
-                                            className="flex items-start gap-3 text-foreground/80"
-                                        >
-                                            <span className="w-1.5 h-1.5 bg-primary mt-2 flex-shrink-0" />
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
+                                {product.keyFeatures && product.keyFeatures.length > 0 && (
+                                    <>
+                                        <h4 className="text-xl font-semibold mb-4">Key Features</h4>
+                                        <ul className="space-y-3">
+                                            {product.keyFeatures.map((feature, index) => (
+                                                <li
+                                                    key={index}
+                                                    className="flex items-start gap-3 text-foreground/80"
+                                                >
+                                                    <span className="w-1.5 h-1.5 bg-primary mt-2 flex-shrink-0" />
+                                                    {feature}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </>
+                                )}
                             </div>
                         </TabsContent>
 
@@ -404,40 +460,34 @@ export default function ProductDetails() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="bg-muted/30 p-6">
                                         <p className="text-sm text-muted-foreground mb-1">SKU</p>
-                                        <p className="font-semibold">{product.sku}</p>
+                                        <p className="font-semibold">{product.SKU}</p>
                                     </div>
                                     <div className="bg-muted/30 p-6">
                                         <p className="text-sm text-muted-foreground mb-1">
                                             Category
                                         </p>
-                                        <p className="font-semibold">{product.category}</p>
+                                        <p className="font-semibold">{product.category.name}</p>
                                     </div>
                                     <div className="bg-muted/30 p-6">
                                         <p className="text-sm text-muted-foreground mb-1">
-                                            Material
+                                            Stock
                                         </p>
-                                        <p className="font-semibold">
-                                            100% Premium Full-Grain Leather
-                                        </p>
+                                        <p className="font-semibold">{product.totalStocks} units</p>
                                     </div>
-                                    <div className="bg-muted/30 p-6">
-                                        <p className="text-sm text-muted-foreground mb-1">
-                                            Dimensions
-                                        </p>
-                                        <p className="font-semibold">35 x 28 x 12 cm</p>
-                                    </div>
-                                    <div className="bg-muted/30 p-6">
-                                        <p className="text-sm text-muted-foreground mb-1">Weight</p>
-                                        <p className="font-semibold">850g</p>
-                                    </div>
-                                    <div className="bg-muted/30 p-6">
-                                        <p className="text-sm text-muted-foreground mb-1">
-                                            Available Colors
-                                        </p>
-                                        <p className="font-semibold">
-                                            {product.colors.map((c) => c.name).join(", ")}
-                                        </p>
-                                    </div>
+                                    {product.sizes && product.sizes.length > 0 && (
+                                        <div className="bg-muted/30 p-6">
+                                            <p className="text-sm text-muted-foreground mb-1">
+                                                Available Sizes
+                                            </p>
+                                            <p className="font-semibold">{product.sizes.join(", ")}</p>
+                                        </div>
+                                    )}
+                                    {product.specifications && product.specifications.map((spec, index) => (
+                                        <div key={index} className="bg-muted/30 p-6">
+                                            <p className="text-sm text-muted-foreground mb-1">{spec.name}</p>
+                                            <p className="font-semibold">{spec.value}</p>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </TabsContent>
