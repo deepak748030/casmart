@@ -10,12 +10,13 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Mail, Phone, Calendar, LogOut, Lock, Save, Loader2, Camera, MapPin, Trash2, Plus } from 'lucide-react';
+import { User, Mail, Phone, Calendar, LogOut, Lock, Save, Loader2, Camera, MapPin, Trash2, Plus, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { updateDetails, updatePassword } from '@/api/authApi';
 import { ApiError } from '@/api/authApi';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Address } from '@/types/auth';
+import UserOrders from '@/components/UserOrders';
 
 export default function Profile() {
     const { user, isLoading, refreshUser, logout } = useAuth();
@@ -315,10 +316,14 @@ export default function Profile() {
 
                     {/* Profile Content */}
                     <Tabs defaultValue="details" className="space-y-6">
-                        <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
+                        <TabsList className="grid w-full grid-cols-4 max-w-3xl mx-auto">
                             <TabsTrigger value="details" className="gap-2">
                                 <User className="h-4 w-4" />
                                 Personal Info
+                            </TabsTrigger>
+                            <TabsTrigger value="orders" className="gap-2">
+                                <Package className="h-4 w-4" />
+                                My Orders
                             </TabsTrigger>
                             <TabsTrigger value="addresses" className="gap-2">
                                 <MapPin className="h-4 w-4" />
@@ -436,6 +441,11 @@ export default function Profile() {
                                     </form>
                                 </CardContent>
                             </Card>
+                        </TabsContent>
+
+                        {/* Orders Tab */}
+                        <TabsContent value="orders">
+                            <UserOrders />
                         </TabsContent>
 
                         {/* Addresses Tab */}

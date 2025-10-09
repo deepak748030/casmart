@@ -26,6 +26,8 @@ import {
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { createOrder } from "@/api/orderApi";
+import type { CreateOrderData } from "@/api/orderApi";
 
 export default function Checkout() {
     const navigate = useNavigate();
@@ -76,13 +78,46 @@ export default function Checkout() {
 
         setIsProcessing(true);
 
-        // Simulate order processing
-        setTimeout(() => {
-            clearCart();
+        try {
+            // Prepare order data
+            const orderData: CreateOrderData = {
+                orderItems: cartItems.map(item => ({
+                    product: item._id,
+                    name: item.title,
+                    quantity: item.quantity,
+                    image: item.imageUrl,
+                    price: item.amount,
+                    discountedPrice: item.discountedAmount,
+                    variant: item.size,
+                })),
+                shippingAddress: {
+                    street: formData.address,
+                    city: formData.city,
+                    state: formData.state,
+                    zipCode: formData.pincode,
+                    country: "India",
+                },
+                paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment',
+                taxPrice: 0,
+                shippingPrice: deliveryCharges,
+                totalPrice: total,
+            };
+
+            // Create order via API
+            const response = await createOrder(orderData);
+
+            if (response.success) {
+                clearCart();
+                toast.success("Order placed successfully!");
+                // Navigate to order confirmation or profile orders page
+                navigate("/profile");
+            }
+        } catch (error) {
+            console.error("Order creation error:", error);
+            toast.error(error instanceof Error ? error.message : "Failed to place order. Please try again.");
+        } finally {
             setIsProcessing(false);
-            toast.success("Order placed successfully!");
-            navigate("/");
-        }, 2000);
+        }
     };
 
     if (authLoading) {

@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Eye, Truck, Calendar, Package } from "lucide-react";
+import { Search, Eye, Truck, Calendar, Package, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import { getAllOrders, updateOrderToPaid, updateOrderToDelivered } from "@/api/orderApi";
+import type { Order } from "@/api/orderApi";
+import OrderDetailsDialog from "@/components/admin/OrderDetailsDialog";
 import {
     Table,
     TableBody,
@@ -20,82 +24,47 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-interface MockOrder {
-    _id: string;
-    orderId: string;
-    customerName: string;
-    customerEmail: string;
-    items: number;
-    total: number;
-    status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-    createdAt: string;
-}
-
 export default function AdminOrders() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // Mock data
-    const mockOrders: MockOrder[] = [
-        {
-            _id: "1",
-            orderId: "ORD-1001",
-            customerName: "John Doe",
-            customerEmail: "john@example.com",
-            items: 3,
-            total: 2499.99,
-            status: "delivered",
-            createdAt: "2024-03-15",
-        },
-        {
-            _id: "2",
-            orderId: "ORD-1002",
-            customerName: "Jane Smith",
-            customerEmail: "jane@example.com",
-            items: 1,
-            total: 999.00,
-            status: "shipped",
-            createdAt: "2024-03-16",
-        },
-        {
-            _id: "3",
-            orderId: "ORD-1003",
-            customerName: "Bob Wilson",
-            customerEmail: "bob@example.com",
-            items: 5,
-            total: 4599.50,
-            status: "processing",
-            createdAt: "2024-03-17",
-        },
-        {
-            _id: "4",
-            orderId: "ORD-1004",
-            customerName: "Alice Brown",
-            customerEmail: "alice@example.com",
-            items: 2,
-            total: 1899.00,
-            status: "pending",
-            createdAt: "2024-03-18",
-        },
-        {
-            _id: "5",
-            orderId: "ORD-1005",
-            customerName: "Charlie Davis",
-            customerEmail: "charlie@example.com",
-            items: 4,
-            total: 3299.99,
-            status: "cancelled",
-            createdAt: "2024-03-14",
-        },
-    ];
+    // Fetch orders
+    const fetchOrders = async () => {
+        try {
+            setIsLoading(true);
+            const response = await getAllOrders({
+                sort: '-createdAt'
+            });
+            setOrders(response.data.orders);
+        } catch (error) {
+            toast.error("Failed to fetch orders");
+            console.error("Error fetching orders:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-    const filteredOrders = mockOrders.filter(
-        (order) =>
-            (order.orderId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                order.customerEmail.toLowerCase().includes(searchQuery.toLowerCase())) &&
-            (statusFilter === "all" || order.status === statusFilter)
-    );
+    useEffect(() => {
+        fetchOrders();
+    }, []);
+
+    const filteredOrders = orders.filter((order) => {
+        const user = typeof order.user === 'object' ? order.user : null;
+        const searchLower = searchQuery.toLowerCase();
+
+        const matchesSearch = !searchQuery ||
+            order._id.toLowerCase().includes(searchLower) ||
+            (user?.name.toLowerCase().includes(searchLower)) ||
+            (user?.email.toLowerCase().includes(searchLower));
+
+        const matchesStatus = statusFilter === "all" || order.orderStatus === statusFilter;
+
+        return matchesSearch && matchesStatus;
+    });
 
     const getStatusBadgeVariant = (status: string) => {
         switch (status) {
@@ -115,18 +84,29 @@ export default function AdminOrders() {
     };
 
     const stats = {
-        total: mockOrders.length,
-        pending: mockOrders.filter((o) => o.status === "pending").length,
-        processing: mockOrders.filter((o) => o.status === "processing").length,
-        shipped: mockOrders.filter((o) => o.status === "shipped").length,
-        delivered: mockOrders.filter((o) => o.status === "delivered").length,
+        total: orders.length,
+        pending: orders.filter((o) => o.orderStatus === "pending").length,
+        processing: orders.filter((o) => o.orderStatus === "processing").length,
+        shipped: orders.filter((o) => o.orderStatus === "shipped").length,
+        delivered: orders.filter((o) => o.orderStatus === "delivered").length,
+    };
+
+    const handleViewOrder = (order: Order) => {
+        setSelectedOrder(order);
+        setIsDialogOpen(true);
     };
 
     return (
         <div className="space-y-6">
-            <div>
-                <h2 className="text-3xl font-bold text-foreground">Orders Management</h2>
-                <p className="text-muted-foreground mt-1">Track and manage all orders</p>
+            <div className="flex justify-between items-start">
+                <div>
+                    <h2 className="text-3xl font-bold text-foreground">Orders Management</h2>
+                    <p className="text-muted-foreground mt-1">Track and manage all orders</p>
+                </div>
+                <Button onClick={fetchOrders} disabled={isLoading} size="sm">
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                    Refresh
+                </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -227,40 +207,84 @@ export default function AdminOrders() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredOrders.map((order) => (
-                                    <TableRow key={order._id} className="hover:bg-muted/50">
-                                        <TableCell className="font-medium text-foreground">{order.orderId}</TableCell>
-                                        <TableCell>
-                                            <div>
-                                                <p className="font-medium text-foreground">{order.customerName}</p>
-                                                <p className="text-sm text-muted-foreground">{order.customerEmail}</p>
+                                {isLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="text-center py-8">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <RefreshCw className="h-4 w-4 animate-spin" />
+                                                <span>Loading orders...</span>
                                             </div>
-                                        </TableCell>
-                                        <TableCell className="text-muted-foreground">{order.items} items</TableCell>
-                                        <TableCell className="font-semibold text-foreground">₹{order.total.toFixed(2)}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={getStatusBadgeVariant(order.status)} className="capitalize">
-                                                {order.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2 text-muted-foreground">
-                                                <Calendar className="h-4 w-4" />
-                                                {new Date(order.createdAt).toLocaleDateString()}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="ghost" size="icon" className="hover:text-primary">
-                                                <Eye className="h-4 w-4" />
-                                            </Button>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                ) : filteredOrders.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                            No orders found
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    filteredOrders.map((order) => {
+                                        const user = typeof order.user === 'object' ? order.user : null;
+                                        return (
+                                            <TableRow key={order._id} className="hover:bg-muted/50">
+                                                <TableCell className="font-medium text-foreground">
+                                                    {order._id.slice(-8).toUpperCase()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div>
+                                                        <p className="font-medium text-foreground">
+                                                            {user?.name || 'N/A'}
+                                                        </p>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {user?.email || 'N/A'}
+                                                        </p>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground">
+                                                    {order.orderItems.length} items
+                                                </TableCell>
+                                                <TableCell className="font-semibold text-foreground">
+                                                    ₹{order.totalPrice.toFixed(2)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge
+                                                        variant={getStatusBadgeVariant(order.orderStatus)}
+                                                        className="capitalize"
+                                                    >
+                                                        {order.orderStatus}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                                        <Calendar className="h-4 w-4" />
+                                                        {new Date(order.createdAt).toLocaleDateString()}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="hover:text-primary"
+                                                        onClick={() => handleViewOrder(order)}
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                )}
                             </TableBody>
                         </Table>
                     </div>
                 </CardContent>
             </Card>
+
+            <OrderDetailsDialog
+                order={selectedOrder}
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+            />
         </div>
     );
 }
