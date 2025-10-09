@@ -198,6 +198,18 @@ export const Header = () => {
                   Contact
                 </NavLink>
               </li>
+              {user?.role === 'admin' && (
+                <li>
+                  <NavLink
+                    to="/admin"
+                    className={({ isActive }) =>
+                      `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
+                    }
+                  >
+                    Dashboard
+                  </NavLink>
+                </li>
+              )}
             </ul>
 
             {/* Right Side Features */}
@@ -274,6 +286,14 @@ export const Header = () => {
                 <span className="font-semibold">{user ? 'My Profile' : 'My Account'}</span>
               </Link>
             </li>
+            {user?.role === 'admin' && (
+              <li className="border-b border-border bg-background">
+                <Link to="/admin" onClick={toggleMobileMenu} className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
+                  <Shield className="h-5 w-5" />
+                  <span className="font-semibold">Admin Dashboard</span>
+                </Link>
+              </li>
+            )}
             <li className="border-b border-border bg-background">
               <a href="#" className="flex items-center justify-between py-4 px-4 text-foreground hover:bg-muted transition-all">
                 <div className="flex items-center gap-3">

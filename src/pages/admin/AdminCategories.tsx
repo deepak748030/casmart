@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Table,
     TableBody,
@@ -32,8 +31,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Pencil, Trash2, Image as ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Image as ImageIcon, Search } from "lucide-react";
 import {
     getCategories,
     createCategory,
@@ -42,9 +40,10 @@ import {
     Category,
 } from "@/api/categoryApi";
 
-const AdminCategories = () => {
+export default function AdminCategories() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -58,7 +57,6 @@ const AdminCategories = () => {
     const [submitting, setSubmitting] = useState(false);
 
     const { toast } = useToast();
-    const { user } = useAuth();
 
     useEffect(() => {
         fetchCategories();
@@ -215,85 +213,110 @@ const AdminCategories = () => {
         setIsDeleteDialogOpen(true);
     };
 
-    return (
-        <div className="min-h-screen flex flex-col">
-            <Header />
+    const filteredCategories = categories.filter((category) =>
+        category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (category.description?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+    );
 
-            <main className="flex-1 py-12 bg-background">
-                <div className="container mx-auto px-4">
-                    <div className="flex justify-between items-center mb-8">
-                        <div>
-                            <h1 className="text-4xl font-bold mb-2">Category Management</h1>
-                            <p className="text-muted-foreground">
-                                Manage all product categories
-                            </p>
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-3xl font-bold text-foreground">Categories Management</h2>
+                    <p className="text-muted-foreground mt-1">Manage all product categories</p>
+                </div>
+                <Button
+                    onClick={() => {
+                        resetForm();
+                        setIsCreateDialogOpen(true);
+                    }}
+                    className="gap-2"
+                >
+                    <Plus className="h-4 w-4" />
+                    Add Category
+                </Button>
+            </div>
+
+            <Card className="border-border">
+                <CardHeader>
+                    <CardTitle className="text-foreground">All Categories ({filteredCategories.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="mb-4">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search categories..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10"
+                            />
                         </div>
-                        <Button
-                            onClick={() => {
-                                resetForm();
-                                setIsCreateDialogOpen(true);
-                            }}
-                            size="lg"
-                        >
-                            <Plus className="mr-2 h-5 w-5" />
-                            Add Category
-                        </Button>
                     </div>
 
                     {loading ? (
                         <div className="text-center py-12">
-                            <p className="text-muted-foreground">Loading categories...</p>
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                            <p className="text-muted-foreground mt-4">Loading categories...</p>
                         </div>
-                    ) : categories.length === 0 ? (
-                        <div className="text-center py-12 border rounded-lg">
+                    ) : filteredCategories.length === 0 ? (
+                        <div className="text-center py-12 border rounded-lg bg-muted/20">
                             <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                            <p className="text-muted-foreground">No categories found</p>
+                            <p className="text-muted-foreground">
+                                {searchQuery ? "No categories found matching your search" : "No categories found"}
+                            </p>
                         </div>
                     ) : (
-                        <div className="border rounded-lg overflow-hidden">
+                        <div className="rounded-md border border-border overflow-hidden">
                             <Table>
                                 <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Image</TableHead>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Description</TableHead>
-                                        <TableHead>Created</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
+                                    <TableRow className="bg-muted/50">
+                                        <TableHead className="font-semibold">Image</TableHead>
+                                        <TableHead className="font-semibold">Name</TableHead>
+                                        <TableHead className="font-semibold">Description</TableHead>
+                                        <TableHead className="font-semibold">Created</TableHead>
+                                        <TableHead className="text-right font-semibold">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {categories.map((category) => (
-                                        <TableRow key={category._id}>
+                                    {filteredCategories.map((category) => (
+                                        <TableRow key={category._id} className="hover:bg-muted/50">
                                             <TableCell>
                                                 <img
                                                     src={`http://localhost:5000/api/categories/${category._id}/image`}
                                                     alt={category.name}
-                                                    className="w-16 h-16 object-cover rounded"
+                                                    className="w-16 h-16 object-cover rounded border border-border"
+                                                    onError={(e) => {
+                                                        e.currentTarget.style.display = 'none';
+                                                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                                    }}
                                                 />
-                                                <div className="w-16 h-16 bg-muted rounded items-center justify-center hidden">
+                                                <div className="w-16 h-16 bg-muted rounded flex items-center justify-center hidden">
                                                     <ImageIcon className="h-6 w-6 text-muted-foreground" />
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="font-medium">{category.name}</TableCell>
-                                            <TableCell className="max-w-md truncate">
+                                            <TableCell className="font-medium text-foreground">{category.name}</TableCell>
+                                            <TableCell className="max-w-md truncate text-muted-foreground">
                                                 {category.description || "—"}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="text-muted-foreground">
                                                 {new Date(category.createdAt).toLocaleDateString()}
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button
-                                                        variant="outline"
-                                                        size="sm"
+                                                        variant="ghost"
+                                                        size="icon"
                                                         onClick={() => openEditDialog(category)}
+                                                        className="hover:text-primary"
                                                     >
                                                         <Pencil className="h-4 w-4" />
                                                     </Button>
                                                     <Button
-                                                        variant="outline"
-                                                        size="sm"
+                                                        variant="ghost"
+                                                        size="icon"
                                                         onClick={() => openDeleteDialog(category)}
+                                                        className="hover:text-destructive"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -305,10 +328,8 @@ const AdminCategories = () => {
                             </Table>
                         </div>
                     )}
-                </div>
-            </main>
-
-            <Footer />
+                </CardContent>
+            </Card>
 
             {/* Create Dialog */}
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -360,7 +381,7 @@ const AdminCategories = () => {
                                 <img
                                     src={imagePreview}
                                     alt="Preview"
-                                    className="mt-2 w-full h-40 object-cover rounded"
+                                    className="mt-2 w-full h-40 object-cover rounded border border-border"
                                 />
                             )}
                         </div>
@@ -434,7 +455,7 @@ const AdminCategories = () => {
                                 <img
                                     src={imagePreview}
                                     alt="Preview"
-                                    className="mt-2 w-full h-40 object-cover rounded"
+                                    className="mt-2 w-full h-40 object-cover rounded border border-border"
                                 />
                             )}
                         </div>
@@ -458,24 +479,22 @@ const AdminCategories = () => {
                 </DialogContent>
             </Dialog>
 
-            {/* Delete Confirmation Dialog */}
+            {/* Delete Dialog */}
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Category</AlertDialogTitle>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete "{selectedCategory?.name}"? This action
-                            will soft-delete the category.
+                            This will permanently delete the category "{selectedCategory?.name}".
+                            This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setSelectedCategory(null)}>
-                            Cancel
-                        </AlertDialogCancel>
+                        <AlertDialogCancel disabled={submitting}>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleDelete}
                             disabled={submitting}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            className="bg-destructive hover:bg-destructive/90"
                         >
                             {submitting ? "Deleting..." : "Delete"}
                         </AlertDialogAction>
@@ -484,6 +503,4 @@ const AdminCategories = () => {
             </AlertDialog>
         </div>
     );
-};
-
-export default AdminCategories;
+}
