@@ -45,7 +45,7 @@ export const Hero = () => {
             <Button
               size="lg"
               variant="outline"
-              className="border-2 border-foreground/20 hover:border-primary hover:bg-primary/5 hover:scale-105 transition-all duration-300 backdrop-blur-sm"
+              className="border-2 border-foreground/20 text-foreground hover:border-primary hover:bg-primary/5 hover:text-foreground hover:scale-105 transition-all duration-300 backdrop-blur-sm"
             >
               <span className="font-semibold">View Collections</span>
             </Button>

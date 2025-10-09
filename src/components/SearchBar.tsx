@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Search, IndianRupee } from "lucide-react";
+import { Search, IndianRupee, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "@/hooks/useDebounce";
-import { products, Product } from "@/data/products";
+import { getAllProducts, Product } from "@/api/productApi";
 import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 interface SearchBarProps {
     className?: string;
@@ -14,6 +15,7 @@ interface SearchBarProps {
 export const SearchBar = ({ className = "", isMobile = false }: SearchBarProps) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [isOpen, setIsOpen] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
     const debouncedSearch = useDebounce(searchQuery, 300);
     const searchRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
@@ -21,18 +23,34 @@ export const SearchBar = ({ className = "", isMobile = false }: SearchBarProps) 
     const [searchResults, setSearchResults] = useState<Product[]>([]);
 
     useEffect(() => {
-        if (debouncedSearch.trim().length > 0) {
-            const filtered = products.filter(
-                (product) =>
-                    product.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                    product.category.toLowerCase().includes(debouncedSearch.toLowerCase())
-            );
-            setSearchResults(filtered.slice(0, 5)); // Show top 5 results
-            setIsOpen(true);
-        } else {
-            setSearchResults([]);
-            setIsOpen(false);
-        }
+        const searchProducts = async () => {
+            if (debouncedSearch.trim().length > 0) {
+                try {
+                    setIsSearching(true);
+                    const response = await getAllProducts({
+                        keyword: debouncedSearch,
+                        limit: 5
+                    });
+                    setSearchResults(response.data.products);
+                    setIsOpen(true);
+                } catch (error: any) {
+                    console.error('Search error:', error);
+                    toast({
+                        title: "Search Error",
+                        description: error.response?.data?.message || "Failed to search products",
+                        variant: "destructive",
+                    });
+                    setSearchResults([]);
+                } finally {
+                    setIsSearching(false);
+                }
+            } else {
+                setSearchResults([]);
+                setIsOpen(false);
+            }
+        };
+
+        searchProducts();
     }, [debouncedSearch]);
 
     useEffect(() => {
@@ -46,7 +64,7 @@ export const SearchBar = ({ className = "", isMobile = false }: SearchBarProps) 
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleProductClick = (productId: number) => {
+    const handleProductClick = (productId: string) => {
         navigate(`/product/${productId}`);
         setSearchQuery("");
         setIsOpen(false);
@@ -54,8 +72,15 @@ export const SearchBar = ({ className = "", isMobile = false }: SearchBarProps) 
 
     const handleSearch = () => {
         if (searchQuery.trim()) {
-            // In a real app, navigate to search results page
-            console.log("Searching for:", searchQuery);
+            navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+            setSearchQuery("");
+            setIsOpen(false);
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleSearch();
         }
     };
 
@@ -69,49 +94,59 @@ export const SearchBar = ({ className = "", isMobile = false }: SearchBarProps) 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => searchQuery.trim() && setIsOpen(true)}
+                    onKeyDown={handleKeyDown}
+                    disabled={isSearching}
                 />
                 <Button
                     size="icon"
                     className={`absolute right-0 top-0 ${isMobile ? '' : 'h-11 w-11'}`}
                     onClick={handleSearch}
                     variant={isMobile ? "ghost" : "default"}
+                    disabled={isSearching}
                 >
-                    <Search className="h-5 w-5" />
+                    {isSearching ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                        <Search className="h-5 w-5" />
+                    )}
                 </Button>
             </div>
 
             {/* Search Results Dropdown */}
-            {isOpen && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-background border-2 border-border shadow-lg z-50 max-h-96 overflow-y-auto">
+            {isOpen && !isSearching && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-background border-2 border-border shadow-lg rounded-lg z-50 max-h-96 overflow-y-auto">
                     {searchResults.map((product) => (
                         <button
-                            key={product.id}
-                            onClick={() => handleProductClick(product.id)}
-                            className="w-full flex items-center gap-4 p-4 hover:bg-muted transition-colors border-b border-border last:border-b-0"
+                            key={product._id}
+                            onClick={() => handleProductClick(product._id)}
+                            className="w-full flex items-center gap-4 p-4 hover:bg-muted transition-colors border-b border-border last:border-b-0 first:rounded-t-lg last:rounded-b-lg"
                         >
-                            <div className="w-16 h-16 bg-muted/30 flex-shrink-0 overflow-hidden">
+                            <div className="w-16 h-16 bg-muted/30 flex-shrink-0 overflow-hidden rounded">
                                 <img
-                                    src={product.image}
-                                    alt={product.name}
+                                    src={product.imageUrl || '/placeholder.svg'}
+                                    alt={product.title}
                                     className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.currentTarget.src = '/placeholder.svg';
+                                    }}
                                 />
                             </div>
                             <div className="flex-1 text-left">
                                 <h4 className="font-semibold text-foreground line-clamp-1">
-                                    {product.name}
+                                    {product.title}
                                 </h4>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    {product.category}
+                                    {product.category?.name || 'Uncategorized'}
                                 </p>
                                 <div className="flex items-center gap-2 mt-2">
                                     <div className="flex items-center text-foreground font-bold">
                                         <IndianRupee className="h-4 w-4" />
-                                        <span>{product.price.toLocaleString("en-IN")}</span>
+                                        <span>{product.amount.toLocaleString("en-IN")}</span>
                                     </div>
-                                    {product.oldPrice && (
+                                    {product.discountedAmount && (
                                         <div className="flex items-center text-muted-foreground line-through text-sm">
                                             <IndianRupee className="h-3 w-3" />
-                                            <span>{product.oldPrice.toLocaleString("en-IN")}</span>
+                                            <span>{product.discountedAmount.toLocaleString("en-IN")}</span>
                                         </div>
                                     )}
                                 </div>
@@ -121,9 +156,17 @@ export const SearchBar = ({ className = "", isMobile = false }: SearchBarProps) 
                 </div>
             )}
 
+            {/* Loading State */}
+            {isOpen && isSearching && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-background border-2 border-border shadow-lg rounded-lg z-50 p-8 text-center">
+                    <Loader2 className="h-12 w-12 text-primary mx-auto mb-3 animate-spin" />
+                    <p className="text-muted-foreground font-medium">Searching...</p>
+                </div>
+            )}
+
             {/* No Results */}
-            {isOpen && searchQuery.trim() && searchResults.length === 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-background border-2 border-border shadow-lg z-50 p-8 text-center">
+            {isOpen && !isSearching && searchQuery.trim() && searchResults.length === 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-background border-2 border-border shadow-lg rounded-lg z-50 p-8 text-center">
                     <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                     <p className="text-muted-foreground font-medium">No products found</p>
                     <p className="text-sm text-muted-foreground mt-1">

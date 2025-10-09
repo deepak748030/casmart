@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus, X, Upload, Image as ImageIcon } from "lucide-react";
-import { type Product } from "@/api/productApi";
+import { type Product, getProductImageUrl } from "@/api/productApi";
 import { type Category } from "@/api/categoryApi";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -145,14 +145,17 @@ export default function ProductFormDialog({
                 keyFeatures: editingProduct.keyFeatures || [],
             });
 
-            // Set existing images
-            if (editingProduct.imageUrls) {
+            // Set existing images with full API URLs
+            if (editingProduct.imageUrls && editingProduct.imageUrls.length > 0) {
                 const images = editingProduct.imageUrls.map((url, index) => ({
                     index,
-                    url,
+                    url: getProductImageUrl(editingProduct._id, index),
                 }));
                 setExistingImages(images);
                 setImagesToKeep(images.map((img) => img.index));
+            } else {
+                setExistingImages([]);
+                setImagesToKeep([]);
             }
         } else if (open) {
             // Reset for new product
@@ -421,8 +424,8 @@ export default function ProductFormDialog({
                                                 <div
                                                     key={img.index}
                                                     className={`relative border-2 rounded-lg overflow-hidden cursor-pointer ${imagesToKeep.includes(img.index)
-                                                            ? "border-primary"
-                                                            : "border-border opacity-50"
+                                                        ? "border-primary"
+                                                        : "border-border opacity-50"
                                                         }`}
                                                     onClick={() => toggleExistingImage(img.index)}
                                                 >
