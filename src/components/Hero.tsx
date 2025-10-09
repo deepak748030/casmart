@@ -10,7 +10,7 @@ export const Hero = () => {
       style={{ backgroundImage: `url(${heroBanner})` }}
     >
       {/* Enhanced gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-background/20 to-transparent" />
 
       {/* Decorative elements */}
       <div className="absolute top-20 right-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-slow hidden md:block" />

@@ -125,19 +125,12 @@ export default function ProductDetails() {
             <Header />
             <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">
                 {/* Breadcrumb */}
-                <div className="container mx-auto px-4 pt-32 pb-8">
-                    <Button
-                        variant="ghost"
-                        onClick={() => navigate(-1)}
-                        className="mb-8 hover:bg-muted hover:text-primary transition-colors"
-                    >
-                        <ChevronLeft className="h-4 w-4 mr-2" />
-                        Back to Products
-                    </Button>
+                <div className="container mx-auto px-4 pt-16 md:pt-24">
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 lg:gap-12 mb-8 md:mb-16">
                         {/* Image Gallery */}
-                        <div className="space-y-4">
+                        <div className="space-y-3 md:space-y-4">
                             <div className="relative aspect-square bg-muted/30 overflow-hidden">
                                 <img
                                     src={productImages[selectedImage]}
@@ -155,14 +148,14 @@ export default function ProductDetails() {
                             </div>
 
                             {/* Thumbnail Grid */}
-                            <div className="grid grid-cols-4 gap-4">
+                            <div className="grid grid-cols-4 gap-2 md:gap-4">
                                 {productImages.map((image, index) => (
                                     <button
                                         key={index}
                                         onClick={() => setSelectedImage(index)}
                                         className={`aspect-square bg-muted/30 overflow-hidden transition-all duration-300 ${selectedImage === index
-                                                ? "ring-2 ring-primary scale-95"
-                                                : "hover:opacity-80"
+                                            ? "ring-2 ring-primary scale-95"
+                                            : "hover:opacity-80"
                                             }`}
                                     >
                                         <img
@@ -176,25 +169,25 @@ export default function ProductDetails() {
                         </div>
 
                         {/* Product Info */}
-                        <div className="space-y-6">
+                        <div className="space-y-3 md:space-y-6">
                             <div>
-                                <p className="text-sm text-muted-foreground mb-2">
+                                <p className="text-sm text-muted-foreground mb-1 md:mb-2">
                                     {product.category}
                                 </p>
-                                <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 leading-tight">
                                     {product.name}
                                 </h1>
 
                                 {/* Rating */}
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex items-center gap-1">
+                                <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-3 md:mb-4">
+                                    <div className="flex items-center gap-1.5 md:gap-2">
+                                        <div className="flex items-center gap-0.5 md:gap-1">
                                             {[...Array(5)].map((_, i) => (
                                                 <Star
                                                     key={i}
-                                                    className={`h-5 w-5 ${i < Math.floor(product.rating)
-                                                            ? "fill-amber-400 text-amber-400"
-                                                            : "fill-muted text-muted"
+                                                    className={`h-4 w-4 md:h-5 md:w-5 ${i < Math.floor(product.rating)
+                                                        ? "fill-amber-400 text-amber-400"
+                                                        : "fill-muted text-muted"
                                                         }`}
                                                 />
                                             ))}
@@ -202,24 +195,24 @@ export default function ProductDetails() {
                                         <span className="text-sm font-semibold">
                                             {product.rating}
                                         </span>
-                                        <span className="text-sm text-muted-foreground">
+                                        <span className="text-xs md:text-sm text-muted-foreground">
                                             ({product.reviews} reviews)
                                         </span>
                                     </div>
                                 </div>
 
                                 {/* Price */}
-                                <div className="flex items-center gap-4 mb-2">
+                                <div className="flex flex-wrap items-baseline gap-2 md:gap-4 mb-2">
                                     <div className="flex items-center">
-                                        <IndianRupee className="h-6 w-6 text-foreground" />
-                                        <span className="text-4xl font-bold text-foreground">
+                                        <IndianRupee className="h-5 w-5 md:h-6 md:w-6 text-foreground" />
+                                        <span className="text-3xl md:text-4xl font-bold text-foreground">
                                             {product.price.toLocaleString("en-IN")}
                                         </span>
                                     </div>
                                     {product.oldPrice && (
                                         <div className="flex items-center">
-                                            <IndianRupee className="h-4 w-4 text-muted-foreground" />
-                                            <span className="text-xl text-muted-foreground line-through">
+                                            <IndianRupee className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground" />
+                                            <span className="text-lg md:text-xl text-muted-foreground line-through">
                                                 {product.oldPrice.toLocaleString("en-IN")}
                                             </span>
                                         </div>
@@ -227,12 +220,12 @@ export default function ProductDetails() {
                                 </div>
 
                                 {product.oldPrice && (
-                                    <p className="text-accent font-semibold mb-6">
+                                    <p className="text-accent font-semibold mb-4 md:mb-6 text-sm md:text-base">
                                         You save ₹{(product.oldPrice - product.price).toLocaleString("en-IN")} ({discount}% off)
                                     </p>
                                 )}
 
-                                <p className="text-foreground/80 leading-relaxed mb-6">
+                                <p className="text-foreground/80 leading-relaxed mb-4 md:mb-6 text-sm md:text-base">
                                     {product.description}
                                 </p>
                             </div>
@@ -248,8 +241,8 @@ export default function ProductDetails() {
                                             key={color.name}
                                             onClick={() => setSelectedColor(color.name)}
                                             className={`w-12 h-12 border-2 transition-all duration-300 ${selectedColor === color.name
-                                                    ? "border-primary scale-110"
-                                                    : "border-border hover:border-primary/50"
+                                                ? "border-primary scale-110"
+                                                : "border-border hover:border-primary/50"
                                                 }`}
                                             style={{ backgroundColor: color.value }}
                                             aria-label={color.name}
@@ -270,8 +263,8 @@ export default function ProductDetails() {
                                             variant={selectedSize === size ? "default" : "outline"}
                                             onClick={() => setSelectedSize(size)}
                                             className={`min-w-[80px] transition-all duration-300 ${selectedSize === size
-                                                    ? "shadow-glow scale-105"
-                                                    : "hover:scale-105"
+                                                ? "shadow-glow scale-105"
+                                                : "hover:scale-105"
                                                 }`}
                                         >
                                             {size}
@@ -339,25 +332,25 @@ export default function ProductDetails() {
                             </div>
 
                             {/* Features */}
-                            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
-                                <div className="flex flex-col items-center text-center gap-2 p-4">
-                                    <Truck className="h-8 w-8 text-primary" />
-                                    <p className="text-xs font-semibold">Free Shipping</p>
-                                    <p className="text-xs text-muted-foreground">
+                            <div className="grid grid-cols-3 gap-2 md:gap-4 pt-4 md:pt-6 border-t border-border">
+                                <div className="flex flex-col items-center text-center gap-1 md:gap-2 p-2 md:p-4">
+                                    <Truck className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+                                    <p className="text-[10px] md:text-xs font-semibold">Free Shipping</p>
+                                    <p className="text-[9px] md:text-xs text-muted-foreground leading-tight">
                                         On orders over ₹2000
                                     </p>
                                 </div>
-                                <div className="flex flex-col items-center text-center gap-2 p-4">
-                                    <Shield className="h-8 w-8 text-primary" />
-                                    <p className="text-xs font-semibold">Secure Payment</p>
-                                    <p className="text-xs text-muted-foreground">
+                                <div className="flex flex-col items-center text-center gap-1 md:gap-2 p-2 md:p-4">
+                                    <Shield className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+                                    <p className="text-[10px] md:text-xs font-semibold">Secure Payment</p>
+                                    <p className="text-[9px] md:text-xs text-muted-foreground leading-tight">
                                         100% Protected
                                     </p>
                                 </div>
-                                <div className="flex flex-col items-center text-center gap-2 p-4">
-                                    <RotateCcw className="h-8 w-8 text-primary" />
-                                    <p className="text-xs font-semibold">Easy Returns</p>
-                                    <p className="text-xs text-muted-foreground">
+                                <div className="flex flex-col items-center text-center gap-1 md:gap-2 p-2 md:p-4">
+                                    <RotateCcw className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+                                    <p className="text-[10px] md:text-xs font-semibold">Easy Returns</p>
+                                    <p className="text-[9px] md:text-xs text-muted-foreground leading-tight">
                                         30-day policy
                                     </p>
                                 </div>
@@ -366,7 +359,7 @@ export default function ProductDetails() {
                     </div>
 
                     {/* Product Details Tabs */}
-                    <Tabs defaultValue="description" className="mb-20">
+                    <Tabs defaultValue="description" className="mb-8 md:mb-16">
                         <TabsList className="w-full justify-start border-b h-auto bg-transparent p-0 space-x-8">
                             <TabsTrigger
                                 value="description"
@@ -452,11 +445,11 @@ export default function ProductDetails() {
                     </Tabs>
 
                     {/* Related Products */}
-                    <div>
-                        <h2 className="text-3xl font-bold mb-8 text-center gradient-text">
+                    <div className="pb-8 md:pb-12">
+                        <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center gradient-text">
                             You May Also Like
                         </h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                             {relatedProducts.map((item, index) => (
                                 <div
                                     key={index}
@@ -475,8 +468,8 @@ export default function ProductDetails() {
                                                 <Star
                                                     key={i}
                                                     className={`h-3.5 w-3.5 ${i < Math.floor(item.rating)
-                                                            ? "fill-amber-400 text-amber-400"
-                                                            : "fill-muted text-muted"
+                                                        ? "fill-amber-400 text-amber-400"
+                                                        : "fill-muted text-muted"
                                                         }`}
                                                 />
                                             ))}

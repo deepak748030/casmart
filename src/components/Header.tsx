@@ -210,8 +210,8 @@ export const Header = () => {
           </div>
 
           {/* Mobile Menu */}
-          <ul className={`md:hidden ${isMobileMenuOpen ? "block" : "hidden"} border-t-2 border-border bg-white dark:bg-gray-900 relative z-50`}>
-            <li className="bg-white dark:bg-gray-900">
+          <ul className={`md:hidden ${isMobileMenuOpen ? "block" : "hidden"} border-t-2 border-border bg-background relative z-50`}>
+            <li className="bg-background">
               <NavLink
                 to="/"
                 onClick={toggleMobileMenu}
@@ -222,7 +222,7 @@ export const Header = () => {
                 Home
               </NavLink>
             </li>
-            <li className="bg-white dark:bg-gray-900">
+            <li className="bg-background">
               <a
                 href="/#shop"
                 onClick={toggleMobileMenu}
@@ -231,7 +231,7 @@ export const Header = () => {
                 Shop
               </a>
             </li>
-            <li className="bg-white dark:bg-gray-900">
+            <li className="bg-background">
               <NavLink
                 to="/about"
                 onClick={toggleMobileMenu}
@@ -242,7 +242,7 @@ export const Header = () => {
                 About
               </NavLink>
             </li>
-            <li className="bg-white dark:bg-gray-900">
+            <li className="bg-background">
               <a
                 href="/#blog"
                 onClick={toggleMobileMenu}
@@ -251,7 +251,7 @@ export const Header = () => {
                 Blog
               </a>
             </li>
-            <li className="bg-white dark:bg-gray-900">
+            <li className="bg-background">
               <NavLink
                 to="/contact"
                 onClick={toggleMobileMenu}
@@ -264,13 +264,13 @@ export const Header = () => {
             </li>
 
             {/* Mobile Actions */}
-            <li className="border-b border-border bg-white dark:bg-gray-900">
+            <li className="border-b border-border bg-background">
               <a href="#" className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
                 <User className="h-5 w-5" />
                 <span className="font-semibold">My Account</span>
               </a>
             </li>
-            <li className="border-b border-border bg-white dark:bg-gray-900">
+            <li className="border-b border-border bg-background">
               <a href="#" className="flex items-center justify-between py-4 px-4 text-foreground hover:bg-muted transition-all">
                 <div className="flex items-center gap-3">
                   <ShoppingCart className="h-5 w-5" />
@@ -281,7 +281,7 @@ export const Header = () => {
                 </Badge>
               </a>
             </li>
-            <li className="border-b border-border bg-white dark:bg-gray-900">
+            <li className="border-b border-border bg-background">
               <a href="#" className="flex items-center justify-between py-4 px-4 text-foreground hover:bg-muted transition-all">
                 <div className="flex items-center gap-3">
                   <Heart className="h-5 w-5" />
@@ -295,7 +295,7 @@ export const Header = () => {
 
             {/* Mobile Features */}
             <li className="py-4 px-4 bg-muted/50">
-              <div className="grid grid-cols-2 gap-3 bg-white dark:bg-gray-900 p-3 rounded-md">
+              <div className="grid grid-cols-2 gap-3 bg-card p-3 rounded-md border border-border">
                 <div className="flex items-center gap-2 text-sm">
                   <Truck className="h-4 w-4 text-primary" />
                   <span className="text-muted-foreground">Free Shipping</span>
