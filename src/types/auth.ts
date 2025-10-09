@@ -1,3 +1,13 @@
+export interface Address {
+    type: 'home' | 'office' | 'other';
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+    isDefault: boolean;
+}
+
 export interface User {
     _id: string;
     name: string;
@@ -10,6 +20,11 @@ export interface User {
     isEmailVerified: boolean;
     phoneNumber?: string;
     dateOfBirth?: string;
+    addresses?: Address[];
+    preferences?: {
+        newsletter: boolean;
+        smsNotifications: boolean;
+    };
     createdAt: string;
     updatedAt: string;
 }
@@ -52,4 +67,10 @@ export interface UpdateDetailsData {
     name?: string;
     email?: string;
     phoneNumber?: string;
+    dateOfBirth?: string;
+    addresses?: Address[];
+    preferences?: {
+        newsletter?: boolean;
+        smsNotifications?: boolean;
+    };
 }

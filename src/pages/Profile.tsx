@@ -10,10 +10,12 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Mail, Phone, Calendar, LogOut, Lock, Save, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, Calendar, LogOut, Lock, Save, Loader2, Camera, MapPin, Trash2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { updateDetails, updatePassword } from '@/api/authApi';
 import { ApiError } from '@/api/authApi';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Address } from '@/types/auth';
 
 export default function Profile() {
     const { user, isLoading, refreshUser, logout } = useAuth();
@@ -27,6 +29,21 @@ export default function Profile() {
         name: user?.name || '',
         email: user?.email || '',
         phoneNumber: user?.phoneNumber || '',
+        dateOfBirth: user?.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
+    });
+
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string>(user?.avatar?.url || '');
+
+    const [addresses, setAddresses] = useState<Address[]>(user?.addresses || []);
+    const [newAddress, setNewAddress] = useState<Address>({
+        type: 'home',
+        street: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: '',
+        isDefault: false,
     });
 
     const [passwordForm, setPasswordForm] = useState({
@@ -47,12 +64,71 @@ export default function Profile() {
         return <Navigate to="/login" replace />;
     }
 
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setAvatarFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatarPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleAddAddress = () => {
+        if (newAddress.street && newAddress.city && newAddress.country) {
+            setAddresses([...addresses, { ...newAddress }]);
+            setNewAddress({
+                type: 'home' as const,
+                street: '',
+                city: '',
+                state: '',
+                zipCode: '',
+                country: '',
+                isDefault: false,
+            });
+            toast({
+                title: 'Address added',
+                description: 'Address has been added. Click "Save Changes" to update your profile.',
+            });
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Please fill in required address fields (street, city, country).',
+            });
+        }
+    };
+
+    const handleRemoveAddress = (index: number) => {
+        setAddresses(addresses.filter((_, i) => i !== index));
+        toast({
+            title: 'Address removed',
+            description: 'Address has been removed. Click "Save Changes" to update your profile.',
+        });
+    };
+
     const handleUpdateDetails = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsUpdatingDetails(true);
 
         try {
-            await updateDetails(detailsForm);
+            const updateData: any = {
+                ...detailsForm,
+                addresses,
+            };
+
+            // Note: Avatar upload would require additional backend endpoint
+            // For now, we're just updating other fields
+            if (avatarFile) {
+                toast({
+                    title: 'Note',
+                    description: 'Avatar upload requires backend configuration. Other details will be updated.',
+                });
+            }
+
+            await updateDetails(updateData);
             await refreshUser();
             toast({
                 title: 'Success',
@@ -139,12 +215,24 @@ export default function Profile() {
                     <Card className="mb-8 border-2 shadow-medium">
                         <CardContent className="pt-8">
                             <div className="flex flex-col md:flex-row items-center gap-6">
-                                <Avatar className="h-24 w-24 border-4 border-primary/20 shadow-strong">
-                                    <AvatarImage src={user.avatar?.url} alt={user.name} />
-                                    <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
-                                        {getInitials(user.name)}
-                                    </AvatarFallback>
-                                </Avatar>
+                                <div className="relative group">
+                                    <Avatar className="h-24 w-24 border-4 border-primary/20 shadow-strong">
+                                        <AvatarImage src={avatarPreview || user.avatar?.url} alt={user.name} />
+                                        <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
+                                            {getInitials(user.name)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <label htmlFor="avatar-upload" className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                        <Camera className="h-8 w-8 text-white" />
+                                        <input
+                                            id="avatar-upload"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleAvatarChange}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                </div>
                                 <div className="text-center md:text-left flex-1">
                                     <h1 className="text-3xl font-bold text-foreground mb-2">{user.name}</h1>
                                     <p className="text-muted-foreground mb-3">{user.email}</p>
@@ -173,10 +261,14 @@ export default function Profile() {
 
                     {/* Profile Content */}
                     <Tabs defaultValue="details" className="space-y-6">
-                        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+                        <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
                             <TabsTrigger value="details" className="gap-2">
                                 <User className="h-4 w-4" />
-                                Profile Details
+                                Personal Info
+                            </TabsTrigger>
+                            <TabsTrigger value="addresses" className="gap-2">
+                                <MapPin className="h-4 w-4" />
+                                Addresses
                             </TabsTrigger>
                             <TabsTrigger value="security" className="gap-2">
                                 <Lock className="h-4 w-4" />
@@ -246,19 +338,21 @@ export default function Profile() {
                                                 />
                                             </div>
 
-                                            {user.dateOfBirth && (
-                                                <div className="space-y-2">
-                                                    <Label className="flex items-center gap-2">
-                                                        <Calendar className="h-4 w-4 text-primary" />
-                                                        Date of Birth
-                                                    </Label>
-                                                    <Input
-                                                        value={new Date(user.dateOfBirth).toLocaleDateString()}
-                                                        disabled
-                                                        className="border-2 bg-muted"
-                                                    />
-                                                </div>
-                                            )}
+                                            <div className="space-y-2">
+                                                <Label htmlFor="dob" className="flex items-center gap-2">
+                                                    <Calendar className="h-4 w-4 text-primary" />
+                                                    Date of Birth
+                                                </Label>
+                                                <Input
+                                                    id="dob"
+                                                    type="date"
+                                                    value={detailsForm.dateOfBirth}
+                                                    onChange={(e) =>
+                                                        setDetailsForm({ ...detailsForm, dateOfBirth: e.target.value })
+                                                    }
+                                                    className="border-2"
+                                                />
+                                            </div>
                                         </div>
 
                                         <Separator />
@@ -286,6 +380,169 @@ export default function Profile() {
                                             )}
                                         </Button>
                                     </form>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* Addresses Tab */}
+                        <TabsContent value="addresses">
+                            <Card className="border-2 shadow-medium">
+                                <CardHeader>
+                                    <CardTitle>Manage Addresses</CardTitle>
+                                    <CardDescription>
+                                        Add and manage your delivery addresses
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    {/* Existing Addresses */}
+                                    {addresses.length > 0 && (
+                                        <div className="space-y-4">
+                                            <h3 className="text-sm font-semibold text-foreground">Your Addresses</h3>
+                                            {addresses.map((address, index) => (
+                                                <Card key={index} className="border-2">
+                                                    <CardContent className="pt-6">
+                                                        <div className="flex justify-between items-start">
+                                                            <div className="space-y-1">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="inline-flex items-center px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium">
+                                                                        {address.type.toUpperCase()}
+                                                                    </span>
+                                                                    {address.isDefault && (
+                                                                        <span className="text-xs text-muted-foreground">(Default)</span>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-sm font-medium text-foreground">{address.street}</p>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {address.city}, {address.state} {address.zipCode}
+                                                                </p>
+                                                                <p className="text-sm text-muted-foreground">{address.country}</p>
+                                                            </div>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleRemoveAddress(index)}
+                                                                className="text-destructive hover:text-destructive"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <Separator />
+
+                                    {/* Add New Address */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-sm font-semibold text-foreground">Add New Address</h3>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="address-type">Address Type</Label>
+                                                <Select
+                                                    value={newAddress.type}
+                                                    onValueChange={(value) => setNewAddress({ ...newAddress, type: value as Address['type'] })}
+                                                >
+                                                    <SelectTrigger className="border-2">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="home">Home</SelectItem>
+                                                        <SelectItem value="office">Office</SelectItem>
+                                                        <SelectItem value="other">Other</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="street">Street Address *</Label>
+                                                <Input
+                                                    id="street"
+                                                    value={newAddress.street}
+                                                    onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
+                                                    placeholder="123 Main St"
+                                                    className="border-2"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="city">City *</Label>
+                                                <Input
+                                                    id="city"
+                                                    value={newAddress.city}
+                                                    onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                                                    placeholder="New York"
+                                                    className="border-2"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="state">State/Province</Label>
+                                                <Input
+                                                    id="state"
+                                                    value={newAddress.state}
+                                                    onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
+                                                    placeholder="NY"
+                                                    className="border-2"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="zipCode">ZIP/Postal Code</Label>
+                                                <Input
+                                                    id="zipCode"
+                                                    value={newAddress.zipCode}
+                                                    onChange={(e) => setNewAddress({ ...newAddress, zipCode: e.target.value })}
+                                                    placeholder="10001"
+                                                    className="border-2"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="country">Country *</Label>
+                                                <Input
+                                                    id="country"
+                                                    value={newAddress.country}
+                                                    onChange={(e) => setNewAddress({ ...newAddress, country: e.target.value })}
+                                                    placeholder="United States"
+                                                    className="border-2"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={handleAddAddress}
+                                            className="w-full gap-2"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                            Add Address
+                                        </Button>
+                                    </div>
+
+                                    <Separator />
+
+                                    <Button
+                                        type="button"
+                                        onClick={handleUpdateDetails}
+                                        disabled={isUpdatingDetails}
+                                        className="w-full gap-2"
+                                    >
+                                        {isUpdatingDetails ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                Saving...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Save className="h-4 w-4" />
+                                                Save All Changes
+                                            </>
+                                        )}
+                                    </Button>
                                 </CardContent>
                             </Card>
                         </TabsContent>

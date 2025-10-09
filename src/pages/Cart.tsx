@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -16,12 +16,14 @@ import {
     ShoppingCart,
     Truck,
     Shield,
-    Tag,
+    LogIn,
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Cart() {
     const navigate = useNavigate();
+    const { user, isLoading } = useAuth();
     const {
         cartItems,
         removeFromCart,
@@ -30,7 +32,13 @@ export default function Cart() {
         getCartTotal,
     } = useCart();
 
-    const [promoCode, setPromoCode] = useState("");
+    useEffect(() => {
+        if (!isLoading && !user) {
+            navigate("/login");
+        }
+    }, [user, isLoading, navigate]);
+
+
 
     const subtotal = getCartTotal();
     const deliveryCharges = 200;
@@ -41,6 +49,51 @@ export default function Cart() {
         // Navigate to checkout page (to be implemented)
         navigate("/checkout");
     };
+
+    if (isLoading) {
+        return (
+            <>
+                <Header />
+                <main className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                        <p className="text-muted-foreground">Loading...</p>
+                    </div>
+                </main>
+                <Footer />
+            </>
+        );
+    }
+
+    if (!user) {
+        return (
+            <>
+                <Header />
+                <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+                    <div className="container mx-auto px-4 py-16 md:py-24">
+                        <div className="max-w-2xl mx-auto text-center">
+                            <div className="mb-8">
+                                <LogIn className="h-24 w-24 md:h-32 md:w-32 mx-auto text-muted-foreground/50" />
+                            </div>
+                            <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                                Login Required
+                            </h1>
+                            <p className="text-muted-foreground mb-8 text-lg">
+                                Please log in to view your shopping cart.
+                            </p>
+                            <Link to="/login">
+                                <Button size="lg" className="shadow-glow">
+                                    <LogIn className="h-5 w-5 mr-2" />
+                                    Login
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                </main>
+                <Footer />
+            </>
+        );
+    }
 
     if (cartItems.length === 0) {
         return (
@@ -207,32 +260,32 @@ export default function Cart() {
                         <div className="lg:col-span-1">
                             <Card className="sticky top-8 shadow-lg border-2">
                                 <CardContent className="p-6">
-                                    <h2 className="text-2xl font-bold mb-6 gradient-text">Order Summary</h2>
+                                    <h2 className="text-xl font-bold mb-6">Order Summary</h2>
 
-                                    <div className="space-y-4 mb-6">
-                                        <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                                            <span className="text-muted-foreground">Subtotal</span>
-                                            <div className="flex items-center font-semibold text-lg">
-                                                <IndianRupee className="h-4 w-4" />
+                                    <div className="space-y-3 mb-6">
+                                        <div className="flex justify-between items-center py-2">
+                                            <span className="text-sm text-muted-foreground">Subtotal</span>
+                                            <div className="flex items-center font-medium text-sm">
+                                                <IndianRupee className="h-3.5 w-3.5" />
                                                 <span>{subtotal.toLocaleString("en-IN")}</span>
                                             </div>
                                         </div>
-                                        <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                                            <span className="text-muted-foreground flex items-center gap-2">
-                                                <Truck className="h-4 w-4" />
+                                        <div className="flex justify-between items-center py-2">
+                                            <span className="text-sm text-muted-foreground flex items-center gap-2">
+                                                <Truck className="h-3.5 w-3.5" />
                                                 Delivery Charges
                                             </span>
-                                            <div className="flex items-center font-semibold text-lg">
-                                                <IndianRupee className="h-4 w-4" />
+                                            <div className="flex items-center font-medium text-sm">
+                                                <IndianRupee className="h-3.5 w-3.5" />
                                                 <span>{deliveryCharges}</span>
                                             </div>
                                         </div>
                                         {discount > 0 && (
-                                            <div className="flex justify-between items-center p-3 bg-accent/10 rounded-lg">
-                                                <span className="text-muted-foreground">Discount</span>
-                                                <div className="flex items-center text-accent font-semibold text-lg">
+                                            <div className="flex justify-between items-center py-2">
+                                                <span className="text-sm text-muted-foreground">Discount</span>
+                                                <div className="flex items-center text-accent font-medium text-sm">
                                                     <span>-</span>
-                                                    <IndianRupee className="h-4 w-4" />
+                                                    <IndianRupee className="h-3.5 w-3.5" />
                                                     <span>{discount.toLocaleString("en-IN")}</span>
                                                 </div>
                                             </div>
@@ -240,29 +293,12 @@ export default function Cart() {
 
                                         <Separator className="my-4" />
 
-                                        <div className="flex justify-between items-center p-4 bg-primary/10 rounded-lg">
-                                            <span className="text-xl font-bold">Total</span>
-                                            <div className="flex items-center text-2xl font-bold text-primary">
-                                                <IndianRupee className="h-6 w-6" />
+                                        <div className="flex justify-between items-center py-3">
+                                            <span className="text-base font-bold">Total</span>
+                                            <div className="flex items-center text-lg font-bold text-primary">
+                                                <IndianRupee className="h-5 w-5" />
                                                 <span>{total.toLocaleString("en-IN")}</span>
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Promo Code */}
-                                    <div className="mb-6">
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                placeholder="Promo code"
-                                                value={promoCode}
-                                                onChange={(e) => setPromoCode(e.target.value)}
-                                                className="flex-1 px-4 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                                            />
-                                            <Button variant="outline">
-                                                <Tag className="h-4 w-4 mr-2" />
-                                                Apply
-                                            </Button>
                                         </div>
                                     </div>
 
