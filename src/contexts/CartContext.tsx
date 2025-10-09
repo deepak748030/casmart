@@ -27,8 +27,8 @@ interface CartContextType {
     cartItems: CartItem[];
     wishlistItems: WishlistItem[];
     addToCart: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
-    removeFromCart: (id: string) => void;
-    updateQuantity: (id: string, quantity: number) => void;
+    removeFromCart: (id: string, size?: string) => void;
+    updateQuantity: (id: string, size: string | undefined, quantity: number) => void;
     clearCart: () => void;
     addToWishlist: (item: WishlistItem) => void;
     removeFromWishlist: (id: string) => void;
@@ -88,21 +88,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         });
     };
 
-    const removeFromCart = (id: string) => {
-        setCartItems((prev) => prev.filter((item) => item._id !== id));
+    const removeFromCart = (id: string, size?: string) => {
+        setCartItems((prev) => prev.filter((item) => !(item._id === id && item.size === size)));
         toast({
             title: "Removed",
             description: "Item removed from cart",
         });
     };
 
-    const updateQuantity = (id: string, quantity: number) => {
+    const updateQuantity = (id: string, size: string | undefined, quantity: number) => {
         if (quantity < 1) {
-            removeFromCart(id);
+            removeFromCart(id, size);
             return;
         }
         setCartItems((prev) =>
-            prev.map((item) => (item._id === id ? { ...item, quantity } : item))
+            prev.map((item) =>
+                (item._id === id && item.size === size) ? { ...item, quantity } : item
+            )
         );
     };
 

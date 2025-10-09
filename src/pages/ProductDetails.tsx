@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { getProductById, getProductImageUrl, type Product } from "@/api/productApi";
 import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/contexts/CartContext";
 import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
@@ -115,13 +116,13 @@ export default function ProductDetails() {
     const navigate = useNavigate();
     const { id } = useParams();
     const { toast } = useToast();
+    const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useCart();
 
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [selectedSize, setSelectedSize] = useState("");
-    const [isWishlisted, setIsWishlisted] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -367,18 +368,46 @@ export default function ProductDetails() {
                                     size="lg"
                                     className="flex-1 h-14 text-lg font-semibold shadow-glow hover:shadow-strong transition-all duration-300"
                                     disabled={!product.inStock}
+                                    onClick={() => {
+                                        const imageUrl = productImages[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+                                        addToCart({
+                                            _id: product._id,
+                                            title: product.title,
+                                            amount: product.amount,
+                                            discountedAmount: product.discountedAmount,
+                                            imageUrl: imageUrl,
+                                            category: product.category.name,
+                                            size: selectedSize,
+                                            inStock: product.inStock,
+                                        }, quantity);
+                                    }}
                                 >
                                     <ShoppingBag className="h-5 w-5 mr-2" />
                                     Add to Cart
                                 </Button>
                                 <Button
                                     size="lg"
-                                    variant={isWishlisted ? "default" : "outline"}
+                                    variant={isInWishlist(product._id) ? "default" : "outline"}
                                     className="h-14 w-14 transition-all duration-300"
-                                    onClick={() => setIsWishlisted(!isWishlisted)}
+                                    onClick={() => {
+                                        const imageUrl = productImages[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+                                        if (isInWishlist(product._id)) {
+                                            removeFromWishlist(product._id);
+                                        } else {
+                                            addToWishlist({
+                                                _id: product._id,
+                                                title: product.title,
+                                                amount: product.amount,
+                                                discountedAmount: product.discountedAmount,
+                                                imageUrl: imageUrl,
+                                                category: product.category.name,
+                                                inStock: product.inStock,
+                                            });
+                                        }
+                                    }}
                                 >
                                     <Heart
-                                        className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`}
+                                        className={`h-5 w-5 ${isInWishlist(product._id) ? "fill-current" : ""}`}
                                     />
                                 </Button>
                             </div>

@@ -33,9 +33,9 @@ export default function Cart() {
     const [promoCode, setPromoCode] = useState("");
 
     const subtotal = getCartTotal();
-    const shipping = subtotal > 999 ? 0 : 99;
+    const deliveryCharges = 200;
     const discount = 0;
-    const total = subtotal + shipping - discount;
+    const total = subtotal + deliveryCharges - discount;
 
     const handleCheckout = () => {
         // Navigate to checkout page (to be implemented)
@@ -146,7 +146,7 @@ export default function Cart() {
                                                         variant="ghost"
                                                         size="icon"
                                                         className="flex-shrink-0 hover:bg-destructive hover:text-destructive-foreground"
-                                                        onClick={() => removeFromCart(item._id)}
+                                                        onClick={() => removeFromCart(item._id, item.size)}
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -160,7 +160,7 @@ export default function Cart() {
                                                             size="icon"
                                                             className="h-10 w-10"
                                                             onClick={() =>
-                                                                updateQuantity(item._id, item.quantity - 1)
+                                                                updateQuantity(item._id, item.size, item.quantity - 1)
                                                             }
                                                         >
                                                             <Minus className="h-4 w-4" />
@@ -173,7 +173,7 @@ export default function Cart() {
                                                             size="icon"
                                                             className="h-10 w-10"
                                                             onClick={() =>
-                                                                updateQuantity(item._id, item.quantity + 1)
+                                                                updateQuantity(item._id, item.size, item.quantity + 1)
                                                             }
                                                         >
                                                             <Plus className="h-4 w-4" />
@@ -205,33 +205,32 @@ export default function Cart() {
 
                         {/* Order Summary */}
                         <div className="lg:col-span-1">
-                            <Card className="sticky top-8">
+                            <Card className="sticky top-8 shadow-lg border-2">
                                 <CardContent className="p-6">
-                                    <h2 className="text-xl font-bold mb-6">Order Summary</h2>
+                                    <h2 className="text-2xl font-bold mb-6 gradient-text">Order Summary</h2>
 
                                     <div className="space-y-4 mb-6">
-                                        <div className="flex justify-between text-sm">
+                                        <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                                             <span className="text-muted-foreground">Subtotal</span>
-                                            <div className="flex items-center font-semibold">
+                                            <div className="flex items-center font-semibold text-lg">
                                                 <IndianRupee className="h-4 w-4" />
                                                 <span>{subtotal.toLocaleString("en-IN")}</span>
                                             </div>
                                         </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-muted-foreground">Shipping</span>
-                                            {shipping === 0 ? (
-                                                <span className="text-accent font-semibold">FREE</span>
-                                            ) : (
-                                                <div className="flex items-center font-semibold">
-                                                    <IndianRupee className="h-4 w-4" />
-                                                    <span>{shipping}</span>
-                                                </div>
-                                            )}
+                                        <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                                            <span className="text-muted-foreground flex items-center gap-2">
+                                                <Truck className="h-4 w-4" />
+                                                Delivery Charges
+                                            </span>
+                                            <div className="flex items-center font-semibold text-lg">
+                                                <IndianRupee className="h-4 w-4" />
+                                                <span>{deliveryCharges}</span>
+                                            </div>
                                         </div>
                                         {discount > 0 && (
-                                            <div className="flex justify-between text-sm">
+                                            <div className="flex justify-between items-center p-3 bg-accent/10 rounded-lg">
                                                 <span className="text-muted-foreground">Discount</span>
-                                                <div className="flex items-center text-accent font-semibold">
+                                                <div className="flex items-center text-accent font-semibold text-lg">
                                                     <span>-</span>
                                                     <IndianRupee className="h-4 w-4" />
                                                     <span>{discount.toLocaleString("en-IN")}</span>
@@ -239,12 +238,12 @@ export default function Cart() {
                                             </div>
                                         )}
 
-                                        <Separator />
+                                        <Separator className="my-4" />
 
-                                        <div className="flex justify-between text-lg font-bold">
-                                            <span>Total</span>
-                                            <div className="flex items-center">
-                                                <IndianRupee className="h-5 w-5" />
+                                        <div className="flex justify-between items-center p-4 bg-primary/10 rounded-lg">
+                                            <span className="text-xl font-bold">Total</span>
+                                            <div className="flex items-center text-2xl font-bold text-primary">
+                                                <IndianRupee className="h-6 w-6" />
                                                 <span>{total.toLocaleString("en-IN")}</span>
                                             </div>
                                         </div>
@@ -283,20 +282,24 @@ export default function Cart() {
                                     </Link>
 
                                     {/* Features */}
-                                    <div className="mt-6 pt-6 border-t border-border space-y-3">
-                                        <div className="flex items-center gap-3 text-sm">
-                                            <Truck className="h-5 w-5 text-primary flex-shrink-0" />
-                                            <span className="text-muted-foreground">
-                                                {shipping === 0
-                                                    ? "Free shipping on this order"
-                                                    : "Free shipping on orders above ₹999"}
-                                            </span>
+                                    <div className="mt-6 pt-6 border-t border-border space-y-4">
+                                        <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                                            <Truck className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                                            <div>
+                                                <p className="font-semibold text-sm">Fast Delivery</p>
+                                                <span className="text-xs text-muted-foreground">
+                                                    Delivered within 3-5 business days
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-3 text-sm">
-                                            <Shield className="h-5 w-5 text-primary flex-shrink-0" />
-                                            <span className="text-muted-foreground">
-                                                100% Secure Payment
-                                            </span>
+                                        <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                                            <Shield className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                                            <div>
+                                                <p className="font-semibold text-sm">Secure Payment</p>
+                                                <span className="text-xs text-muted-foreground">
+                                                    100% secure payment gateway
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </CardContent>

@@ -13,7 +13,7 @@ export const Products = () => {
   const [activeFilter, setActiveFilter] = useState("Best Seller");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const { addToCart, addToWishlist, isInWishlist } = useCart();
+  const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useCart();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -107,156 +107,162 @@ export const Products = () => {
                 className="group animate-fade-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="bg-card overflow-hidden shadow-soft hover:shadow-medium transition-all duration-500 hover:-translate-y-2 border border-border/50">
-                  <figure className="relative aspect-[4/5] overflow-hidden bg-muted/30">
-                    <Link to={`/product/${product._id}`} className="block h-full">
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt={product.title}
-                          loading="lazy"
-                          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-1"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-muted flex items-center justify-center">
-                          <ShoppingBag className="h-16 w-16 text-muted-foreground/30" />
-                        </div>
-                      )}
-                    </Link>
-
-                    {badge && (
-                      <Badge
-                        variant={badge.variant}
-                        className="absolute top-4 left-4 shadow-medium z-10 text-xs font-bold px-3 py-1"
-                      >
-                        {badge.text}
-                      </Badge>
-                    )}
-
-                    {!product.inStock && (
-                      <Badge
-                        variant="secondary"
-                        className="absolute top-4 left-4 shadow-medium z-10 text-xs font-bold px-3 py-1"
-                      >
-                        Out of Stock
-                      </Badge>
-                    )}
-
-                    {/* Quick View Badge */}
-                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0">
-                      <Button
-                        size="icon"
-                        variant="secondary"
-                        className="rounded-full shadow-strong backdrop-blur-sm bg-white/90 hover:bg-white h-10 w-10"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          navigate(`/product/${product._id}`);
-                        }}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {/* Action Buttons Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-end pb-6 gap-3">
-                      <Button
-                        variant="secondary"
-                        className="flex items-center gap-2 shadow-strong bg-white hover:bg-white/95 text-foreground font-semibold transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-75"
-                        disabled={!product.inStock}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          addToCart({
-                            _id: product._id,
-                            title: product.title,
-                            amount: product.amount,
-                            discountedAmount: product.discountedAmount,
-                            imageUrl: imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
-                            category: product.category.name,
-                            inStock: product.inStock,
-                          }, 1);
-                        }}
-                      >
-                        <ShoppingBag className="h-4 w-4" />
-                        <span>Add to Cart</span>
-                      </Button>
-
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className={`rounded-full hover:bg-white/90 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100 ${isInWishlist(product._id) ? "text-destructive" : "text-white hover:text-destructive"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          addToWishlist({
-                            _id: product._id,
-                            title: product.title,
-                            amount: product.amount,
-                            discountedAmount: product.discountedAmount,
-                            imageUrl: imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
-                            category: product.category.name,
-                            inStock: product.inStock,
-                          });
-                        }}
-                      >
-                        <Heart className={`h-5 w-5 ${isInWishlist(product._id) ? "fill-current" : ""}`} />
-                      </Button>
-                    </div>
-                  </figure>
-
-                  <div className="p-4 space-y-3">
-                    {/* Rating */}
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-3.5 w-3.5 ${i < Math.floor(product.averageRating)
-                              ? "fill-amber-400 text-amber-400"
-                              : "fill-muted text-muted"
-                              }`}
+                <Link to={`/product/${product._id}`} className="block">
+                  <div className="bg-card overflow-hidden shadow-soft hover:shadow-medium transition-all duration-500 hover:-translate-y-2 border border-border/50">
+                    <figure className="relative aspect-[4/5] overflow-hidden bg-muted/30">
+                      <div className="block h-full">
+                        {imageUrl ? (
+                          <img
+                            src={imageUrl}
+                            alt={product.title}
+                            loading="lazy"
+                            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-1"
+                            onError={(e) => {
+                              e.currentTarget.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+                            }}
                           />
-                        ))}
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <ShoppingBag className="h-16 w-16 text-muted-foreground/30" />
+                          </div>
+                        )}
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        ({product.numOfReviews})
-                      </span>
-                    </div>
 
-                    <h3 className="font-semibold text-foreground line-clamp-2 leading-snug">
-                      <Link to={`/product/${product._id}`} className="hover:text-primary transition-colors">
-                        {product.title}
-                      </Link>
-                    </h3>
+                      {badge && (
+                        <Badge
+                          variant={badge.variant}
+                          className="absolute top-4 left-4 shadow-medium z-10 text-xs font-bold px-3 py-1"
+                        >
+                          {badge.text}
+                        </Badge>
+                      )}
 
-                    <div className="flex items-center gap-2 pt-1">
-                      <div className="flex items-center">
-                        <IndianRupee className="h-4 w-4 text-foreground font-bold" />
-                        <span className="text-xl font-bold text-foreground">
-                          {(product.discountedAmount || product.amount).toLocaleString('en-IN')}
+                      {!product.inStock && (
+                        <Badge
+                          variant="secondary"
+                          className="absolute top-4 left-4 shadow-medium z-10 text-xs font-bold px-3 py-1"
+                        >
+                          Out of Stock
+                        </Badge>
+                      )}
+
+                      {/* Quick View Badge */}
+                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0">
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="rounded-full shadow-strong backdrop-blur-sm bg-white/90 hover:bg-white h-10 w-10"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {/* Action Buttons Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-end pb-6 gap-3">
+                        <Button
+                          variant="secondary"
+                          className="flex items-center gap-2 shadow-strong bg-white hover:bg-white/95 text-foreground font-semibold transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-75"
+                          disabled={!product.inStock}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addToCart({
+                              _id: product._id,
+                              title: product.title,
+                              amount: product.amount,
+                              discountedAmount: product.discountedAmount,
+                              imageUrl: imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
+                              category: product.category.name,
+                              inStock: product.inStock,
+                            }, 1);
+                          }}
+                        >
+                          <ShoppingBag className="h-4 w-4" />
+                          <span>Add to Cart</span>
+                        </Button>
+
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className={`rounded-full hover:bg-white/90 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100 ${isInWishlist(product._id) ? "text-destructive" : "text-white hover:text-destructive"
+                            }`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (isInWishlist(product._id)) {
+                              removeFromWishlist(product._id);
+                            } else {
+                              addToWishlist({
+                                _id: product._id,
+                                title: product.title,
+                                amount: product.amount,
+                                discountedAmount: product.discountedAmount,
+                                imageUrl: imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
+                                category: product.category.name,
+                                inStock: product.inStock,
+                              });
+                            }
+                          }}
+                        >
+                          <Heart className={`h-5 w-5 ${isInWishlist(product._id) ? "fill-current" : ""}`} />
+                        </Button>
+                      </div>
+                    </figure>
+
+                    <div className="p-4 space-y-3">
+                      {/* Rating */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3.5 w-3.5 ${i < Math.floor(product.averageRating)
+                                ? "fill-amber-400 text-amber-400"
+                                : "fill-muted text-muted"
+                                }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          ({product.numOfReviews})
                         </span>
                       </div>
-                      {product.discountedAmount && product.discountedAmount < product.amount && (
+
+                      <h3 className="font-semibold text-foreground line-clamp-2 leading-snug hover:text-primary transition-colors">
+                        {product.title}
+                      </h3>
+
+                      <div className="flex items-center gap-2 pt-1">
                         <div className="flex items-center">
-                          <IndianRupee className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground line-through">
-                            {product.amount.toLocaleString('en-IN')}
+                          <IndianRupee className="h-4 w-4 text-foreground font-bold" />
+                          <span className="text-xl font-bold text-foreground">
+                            {(product.discountedAmount || product.amount).toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                        {product.discountedAmount && product.discountedAmount < product.amount && (
+                          <div className="flex items-center">
+                            <IndianRupee className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground line-through">
+                              {product.amount.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {product.discountPercent && product.discountPercent > 0 && (
+                        <div className="pt-1">
+                          <span className="text-xs font-semibold text-accent">
+                            Save {Math.round(product.discountPercent)}%
                           </span>
                         </div>
                       )}
                     </div>
-
-                    {product.discountPercent && product.discountPercent > 0 && (
-                      <div className="pt-1">
-                        <span className="text-xs font-semibold text-accent">
-                          Save {Math.round(product.discountPercent)}%
-                        </span>
-                      </div>
-                    )}
                   </div>
-                </div>
+                </Link>
               </li>
             );
           })}
