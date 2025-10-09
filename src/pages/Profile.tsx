@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
@@ -26,16 +26,16 @@ export default function Profile() {
     const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
     const [detailsForm, setDetailsForm] = useState({
-        name: user?.name || '',
-        email: user?.email || '',
-        phoneNumber: user?.phoneNumber || '',
-        dateOfBirth: user?.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
+        name: '',
+        email: '',
+        phoneNumber: '',
+        dateOfBirth: '',
     });
 
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
-    const [avatarPreview, setAvatarPreview] = useState<string>(user?.avatar?.url || '');
+    const [avatarPreview, setAvatarPreview] = useState<string>('');
 
-    const [addresses, setAddresses] = useState<Address[]>(user?.addresses || []);
+    const [addresses, setAddresses] = useState<Address[]>([]);
     const [newAddress, setNewAddress] = useState<Address>({
         type: 'home',
         street: '',
@@ -51,6 +51,20 @@ export default function Profile() {
         newPassword: '',
         confirmPassword: '',
     });
+
+    // Pre-fill form with user data when user is loaded
+    useEffect(() => {
+        if (user) {
+            setDetailsForm({
+                name: user.name || '',
+                email: user.email || '',
+                phoneNumber: user.phoneNumber || '',
+                dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
+            });
+            setAvatarPreview(user.avatar?.url || '');
+            setAddresses(user.addresses || []);
+        }
+    }, [user]);
 
     if (isLoading) {
         return (
@@ -109,18 +123,44 @@ export default function Profile() {
         });
     };
 
-    const handleUpdateDetails = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleUpdateDetails = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         setIsUpdatingDetails(true);
 
         try {
+            // Include newAddress if user filled fields but didn't click "Add Address"
+            let finalAddresses = [...addresses];
+            const hasAnyNewAddressInput =
+                newAddress.street.trim() !== '' ||
+                newAddress.city.trim() !== '' ||
+                newAddress.state.trim() !== '' ||
+                newAddress.zipCode.trim() !== '' ||
+                newAddress.country.trim() !== '';
+
+            if (hasAnyNewAddressInput) {
+                if (newAddress.street && newAddress.city && newAddress.country) {
+                    finalAddresses.push({ ...newAddress });
+                } else {
+                    toast({
+                        variant: 'destructive',
+                        title: 'Incomplete address',
+                        description: 'Fill Street, City, and Country or clear the new address fields before saving.',
+                    });
+                    setIsUpdatingDetails(false);
+                    return;
+                }
+            }
+
             const updateData: any = {
                 ...detailsForm,
-                addresses,
+                addresses: finalAddresses,
             };
 
+            // Remove empty string values to avoid validation errors
+            if (updateData.phoneNumber === '') delete updateData.phoneNumber;
+            if (updateData.dateOfBirth === '') delete updateData.dateOfBirth;
+
             // Note: Avatar upload would require additional backend endpoint
-            // For now, we're just updating other fields
             if (avatarFile) {
                 toast({
                     title: 'Note',
@@ -130,6 +170,20 @@ export default function Profile() {
 
             await updateDetails(updateData);
             await refreshUser();
+
+            // Clear the newAddress form if we just saved it
+            if (hasAnyNewAddressInput) {
+                setNewAddress({
+                    type: 'home',
+                    street: '',
+                    city: '',
+                    state: '',
+                    zipCode: '',
+                    country: '',
+                    isDefault: false,
+                });
+            }
+
             toast({
                 title: 'Success',
                 description: 'Your details have been updated successfully.',
