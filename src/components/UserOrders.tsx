@@ -3,9 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Package, Calendar, IndianRupee, Eye, RefreshCw, ShoppingBag } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Package, Calendar, IndianRupee, Eye, RefreshCw, ShoppingBag, XCircle } from "lucide-react";
 import { toast } from "sonner";
-import { getMyOrders } from "@/api/orderApi";
+import { getMyOrders, cancelOrder } from "@/api/orderApi";
 import type { Order } from "@/api/orderApi";
 import OrderDetailsDialog from "@/components/admin/OrderDetailsDialog";
 
@@ -14,6 +24,8 @@ export default function UserOrders() {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [orderToCancel, setOrderToCancel] = useState<Order | null>(null);
+    const [isCancelling, setIsCancelling] = useState(false);
 
     const fetchOrders = async () => {
         try {
@@ -52,6 +64,36 @@ export default function UserOrders() {
     const handleViewOrder = (order: Order) => {
         setSelectedOrder(order);
         setIsDialogOpen(true);
+    };
+
+    const handleCancelClick = (order: Order) => {
+        setOrderToCancel(order);
+    };
+
+    const handleCancelConfirm = async () => {
+        if (!orderToCancel) return;
+
+        try {
+            setIsCancelling(true);
+            await cancelOrder(orderToCancel._id);
+            toast.success("Order cancelled successfully");
+            await fetchOrders();
+            setOrderToCancel(null);
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to cancel order");
+            console.error("Error cancelling order:", error);
+        } finally {
+            setIsCancelling(false);
+        }
+    };
+
+    const canCancelOrder = (order: Order) => {
+        return (
+            !order.isPaid &&
+            !order.isDelivered &&
+            order.orderStatus !== 'cancelled' &&
+            order.orderStatus !== 'delivered'
+        );
     };
 
     if (isLoading) {
@@ -172,6 +214,16 @@ export default function UserOrders() {
                                                 <Eye className="h-4 w-4 mr-2" />
                                                 View Details
                                             </Button>
+                                            {canCancelOrder(order) && (
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => handleCancelClick(order)}
+                                                >
+                                                    <XCircle className="h-4 w-4 mr-2" />
+                                                    Cancel Order
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
                                 </CardContent>
@@ -186,6 +238,33 @@ export default function UserOrders() {
                 open={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
             />
+
+            <AlertDialog open={!!orderToCancel} onOpenChange={(open) => !open && setOrderToCancel(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Cancel Order</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to cancel order{" "}
+                            <span className="font-semibold">
+                                #{orderToCancel?._id.slice(-8).toUpperCase()}
+                            </span>
+                            ? This action cannot be undone and the items will be returned to inventory.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isCancelling}>
+                            Keep Order
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleCancelConfirm}
+                            disabled={isCancelling}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            {isCancelling ? "Cancelling..." : "Cancel Order"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 }

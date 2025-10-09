@@ -273,6 +273,7 @@ export const Products = () => {
             variant="outline"
             size="lg"
             className="hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 hover:shadow-glow group"
+            onClick={() => navigate('/products')}
           >
             <span>View All Products</span>
             <ShoppingBag className="ml-2 h-5 w-5 group-hover:animate-bounce-subtle" />

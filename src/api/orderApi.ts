@@ -216,6 +216,17 @@ export async function updateOrderToDelivered(orderId: string): Promise<UpdateOrd
 }
 
 /**
+ * Cancel order (User - cancel own unpaid order)
+ * @route PUT /api/orders/:id/cancel
+ * @access Private (User)
+ */
+export async function cancelOrder(orderId: string): Promise<UpdateOrderResponse> {
+    return apiRequest<UpdateOrderResponse>(`${ORDER_ENDPOINT}/${orderId}/cancel`, {
+        method: 'PUT',
+    });
+}
+
+/**
  * Delete order (Admin only - soft delete)
  * @route DELETE /api/orders/:id
  * @access Private/Admin
