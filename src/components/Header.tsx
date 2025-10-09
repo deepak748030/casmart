@@ -3,7 +3,7 @@ import { ShoppingCart, Heart, User, Menu, X, Phone, Mail, MapPin, IndianRupee, T
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
 import { Badge } from "@/components/ui/badge";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { SearchBar } from "./SearchBar";
 
 export const Header = () => {
@@ -75,10 +75,12 @@ export const Header = () => {
 
             {/* Desktop Actions - Right */}
             <div className="hidden md:flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 hover:bg-muted hover:text-primary transition-colors">
-                <User className="h-5 w-5" />
-                <span className="text-xs font-medium">Account</span>
-              </Button>
+              <Link to="/login">
+                <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 hover:bg-muted hover:text-primary transition-colors">
+                  <User className="h-5 w-5" />
+                  <span className="text-xs font-medium">Account</span>
+                </Button>
+              </Link>
 
               <div className="w-px h-8 bg-border mx-1" />
 
@@ -265,10 +267,10 @@ export const Header = () => {
 
             {/* Mobile Actions */}
             <li className="border-b border-border bg-background">
-              <a href="#" className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
+              <Link to="/login" onClick={toggleMobileMenu} className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
                 <User className="h-5 w-5" />
                 <span className="font-semibold">My Account</span>
-              </a>
+              </Link>
             </li>
             <li className="border-b border-border bg-background">
               <a href="#" className="flex items-center justify-between py-4 px-4 text-foreground hover:bg-muted transition-all">
