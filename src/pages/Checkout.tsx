@@ -81,15 +81,27 @@ export default function Checkout() {
         try {
             // Prepare order data
             const orderData: CreateOrderData = {
-                orderItems: cartItems.map(item => ({
-                    product: item._id,
-                    name: item.title,
-                    quantity: item.quantity,
-                    image: item.imageUrl,
-                    price: item.amount,
-                    discountedPrice: item.discountedAmount,
-                    variant: item.size,
-                })),
+                orderItems: cartItems.map(item => {
+                    // Extract relative path from imageUrl if it contains the API URL
+                    let imagePath = item.imageUrl;
+                    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                    if (imagePath.startsWith(apiUrl)) {
+                        imagePath = imagePath.replace(apiUrl, '');
+                    } else if (imagePath.startsWith('http')) {
+                        // If it's an external URL (like unsplash), keep it as is
+                        imagePath = item.imageUrl;
+                    }
+
+                    return {
+                        product: item._id,
+                        name: item.title,
+                        quantity: item.quantity,
+                        image: imagePath,
+                        price: item.amount,
+                        discountedPrice: item.discountedAmount,
+                        variant: item.size,
+                    };
+                }),
                 shippingAddress: {
                     street: formData.address,
                     city: formData.city,

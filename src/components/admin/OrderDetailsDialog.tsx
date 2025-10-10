@@ -239,49 +239,55 @@ export default function OrderDetailsDialog({ order, open, onOpenChange, onOrderU
                             Order Items ({localOrder.orderItems.length})
                         </h3>
                         <div className="space-y-3">
-                            {localOrder.orderItems.map((item, index) => (
-                                <div key={index} className="flex gap-4 p-4 border border-border rounded-lg hover:border-primary/30 transition-colors bg-card">
-                                    <img
-                                        src={item.image}
-                                        alt={item.name}
-                                        className="w-20 h-20 object-cover rounded-md ring-1 ring-border"
-                                        onError={(e) => {
-                                            e.currentTarget.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
-                                        }}
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="font-semibold text-foreground truncate">{item.name}</h4>
-                                        <div className="flex flex-wrap gap-2 mt-1">
-                                            <Badge variant="outline" className="text-xs">
-                                                Qty: {item.quantity}
-                                            </Badge>
-                                            {item.variant && (
-                                                <Badge variant="secondary" className="text-xs">
-                                                    {item.variant}
+                            {localOrder.orderItems.map((item, index) => {
+                                const imageUrl = item.image.startsWith('http')
+                                    ? item.image
+                                    : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${item.image}`;
+
+                                return (
+                                    <div key={index} className="flex gap-4 p-4 border border-border rounded-lg hover:border-primary/30 transition-colors bg-card">
+                                        <img
+                                            src={imageUrl}
+                                            alt={item.name}
+                                            className="w-20 h-20 object-cover rounded-md ring-1 ring-border"
+                                            onError={(e) => {
+                                                e.currentTarget.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+                                            }}
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-semibold text-foreground truncate">{item.name}</h4>
+                                            <div className="flex flex-wrap gap-2 mt-1">
+                                                <Badge variant="outline" className="text-xs">
+                                                    Qty: {item.quantity}
                                                 </Badge>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-2 mt-2">
-                                            <div className="flex items-center text-sm font-semibold text-foreground">
-                                                <IndianRupee className="h-3.5 w-3.5" />
-                                                <span>{item.discountedPrice || item.price}</span>
+                                                {item.variant && (
+                                                    <Badge variant="secondary" className="text-xs">
+                                                        {item.variant}
+                                                    </Badge>
+                                                )}
                                             </div>
-                                            {item.discountedPrice && item.discountedPrice < item.price && (
-                                                <div className="flex items-center text-xs text-muted-foreground line-through">
-                                                    <IndianRupee className="h-3 w-3" />
-                                                    <span>{item.price}</span>
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <div className="flex items-center text-sm font-semibold text-foreground">
+                                                    <IndianRupee className="h-3.5 w-3.5" />
+                                                    <span>{item.discountedPrice || item.price}</span>
                                                 </div>
-                                            )}
+                                                {item.discountedPrice && item.discountedPrice < item.price && (
+                                                    <div className="flex items-center text-xs text-muted-foreground line-through">
+                                                        <IndianRupee className="h-3 w-3" />
+                                                        <span>{item.price}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="text-right flex flex-col justify-between">
+                                            <div className="flex items-center font-bold text-foreground">
+                                                <IndianRupee className="h-4 w-4" />
+                                                <span>{((item.discountedPrice || item.price) * item.quantity).toFixed(2)}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="text-right flex flex-col justify-between">
-                                        <div className="flex items-center font-bold text-foreground">
-                                            <IndianRupee className="h-4 w-4" />
-                                            <span>{((item.discountedPrice || item.price) * item.quantity).toFixed(2)}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 

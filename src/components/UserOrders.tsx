@@ -185,17 +185,23 @@ export default function UserOrders() {
 
                                             {/* Order Items Preview */}
                                             <div className="flex gap-2 mt-3">
-                                                {order.orderItems.slice(0, 3).map((item, idx) => (
-                                                    <img
-                                                        key={idx}
-                                                        src={item.image}
-                                                        alt={item.name}
-                                                        className="w-12 h-12 object-cover rounded border"
-                                                        onError={(e) => {
-                                                            e.currentTarget.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
-                                                        }}
-                                                    />
-                                                ))}
+                                                {order.orderItems.slice(0, 3).map((item, idx) => {
+                                                    const imageUrl = item.image.startsWith('http')
+                                                        ? item.image
+                                                        : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${item.image}`;
+
+                                                    return (
+                                                        <img
+                                                            key={idx}
+                                                            src={imageUrl}
+                                                            alt={item.name}
+                                                            className="w-12 h-12 object-cover rounded border"
+                                                            onError={(e) => {
+                                                                e.currentTarget.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+                                                            }}
+                                                        />
+                                                    );
+                                                })}
                                                 {order.orderItems.length > 3 && (
                                                     <div className="w-12 h-12 flex items-center justify-center bg-muted rounded border text-xs font-medium">
                                                         +{order.orderItems.length - 3}

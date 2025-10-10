@@ -123,11 +123,15 @@ export const SearchBar = ({ className = "", isMobile = false }: SearchBarProps) 
                         >
                             <div className="w-16 h-16 bg-muted/30 flex-shrink-0 overflow-hidden rounded">
                                 <img
-                                    src={product.imageUrl || '/placeholder.svg'}
+                                    src={
+                                        product.imageUrl
+                                            ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${product.imageUrl}`
+                                            : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400'
+                                    }
                                     alt={product.title}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
-                                        e.currentTarget.src = '/placeholder.svg';
+                                        e.currentTarget.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
                                     }}
                                 />
                             </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ShoppingCart, Heart, User, Menu, X, Phone, Mail, MapPin, IndianRupee, Truck, Shield, Award } from "lucide-react";
+import { ShoppingCart, Heart, User, Menu, X, Phone, Mail, MapPin, IndianRupee, Truck, Shield, Award, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
 import { Badge } from "@/components/ui/badge";
@@ -208,6 +208,18 @@ export const Header = () => {
                   Contact
                 </NavLink>
               </li>
+              {user && (
+                <li>
+                  <NavLink
+                    to="/my-orders"
+                    className={({ isActive }) =>
+                      `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
+                    }
+                  >
+                    My Orders
+                  </NavLink>
+                </li>
+              )}
               {user?.role === 'admin' && (
                 <li>
                   <NavLink
@@ -296,6 +308,14 @@ export const Header = () => {
                 <span className="font-semibold">{user ? 'My Profile' : 'My Account'}</span>
               </Link>
             </li>
+            {user && (
+              <li className="border-b border-border bg-background">
+                <Link to="/my-orders" onClick={toggleMobileMenu} className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
+                  <Package className="h-5 w-5" />
+                  <span className="font-semibold">My Orders</span>
+                </Link>
+              </li>
+            )}
             {user?.role === 'admin' && (
               <li className="border-b border-border bg-background">
                 <Link to="/admin" onClick={toggleMobileMenu} className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
