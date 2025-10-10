@@ -216,10 +216,10 @@ export default function AdminProducts() {
                 formData.append("imagesToKeep", JSON.stringify(imagesToKeep));
             }
 
-            // Add new images
+            // Add new images as individual fields (image0, image1, ...)
             if (images && images.length > 0) {
-                images.forEach((file) => {
-                    formData.append("images", file);
+                images.forEach((file, index) => {
+                    formData.append(`image${index}`, file);
                 });
             }
 

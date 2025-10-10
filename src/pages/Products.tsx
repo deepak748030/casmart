@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getAllProducts, Product, getProductImageUrl } from '@/api/productApi';
 import { getCategories, Category } from '@/api/categoryApi';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -20,6 +20,7 @@ import { Footer } from '@/components/Footer';
 
 const Products = () => {
     const { addToCart } = useCart();
+    const [searchParams] = useSearchParams();
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
@@ -44,18 +45,24 @@ const Products = () => {
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-    // Fetch categories
+    // Fetch categories and handle URL params
     useEffect(() => {
         const fetchCategories = async () => {
             try {
                 const categoriesData = await getCategories();
                 setCategories(categoriesData);
+
+                // Check if category param exists in URL
+                const categoryParam = searchParams.get('category');
+                if (categoryParam && categoriesData.some(cat => cat._id === categoryParam)) {
+                    setSelectedCategories([categoryParam]);
+                }
             } catch (error) {
                 console.error('Error fetching categories:', error);
             }
         };
         fetchCategories();
-    }, []);
+    }, [searchParams]);
 
     const fetchProducts = useCallback(async (pageNum: number, append = false) => {
         try {

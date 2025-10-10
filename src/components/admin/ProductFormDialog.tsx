@@ -50,19 +50,32 @@ const specificationSchema = z.object({
     value: z.string().min(1, "Specification value is required"),
 });
 
-const productSchema = z.object({
-    title: z.string().min(1, "Title is required").max(100, "Title cannot exceed 100 characters"),
-    description: z.string().min(1, "Description is required").max(1000, "Description cannot exceed 1000 characters"),
-    amount: z.coerce.number().min(0, "Price must be positive"),
-    discountedAmount: z.coerce.number().min(0).optional(),
-    category: z.string().min(1, "Category is required"),
-    sizes: z.array(z.string()).min(1, "At least one size is required"),
-    totalStocks: z.coerce.number().min(0, "Stock must be positive"),
-    SKU: z.string().min(1, "SKU is required").toUpperCase(),
-    variants: z.array(variantSchema).optional(),
-    specifications: z.array(specificationSchema).optional(),
-    keyFeatures: z.array(z.string()).optional(),
-});
+const productSchema = z
+    .object({
+        title: z.string().min(1, "Title is required").max(100, "Title cannot exceed 100 characters"),
+        description: z
+            .string()
+            .min(1, "Description is required")
+            .max(1000, "Description cannot exceed 1000 characters"),
+        amount: z.coerce.number().gt(0, "Price must be positive"),
+        discountedAmount: z.coerce.number().min(0).optional(),
+        category: z.string().min(1, "Category is required"),
+        sizes: z.array(z.string()).min(1, "At least one size is required"),
+        totalStocks: z.coerce.number().min(0, "Stock must be positive"),
+        SKU: z.string().min(1, "SKU is required").toUpperCase(),
+        variants: z.array(variantSchema).optional(),
+        specifications: z.array(specificationSchema).optional(),
+        keyFeatures: z.array(z.string()).optional(),
+    })
+    .superRefine((val, ctx) => {
+        if (val.discountedAmount !== undefined && val.discountedAmount > val.amount) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Discounted price cannot be greater than price",
+                path: ["discountedAmount"],
+            });
+        }
+    });
 
 type ProductFormValues = z.infer<typeof productSchema>;
 
