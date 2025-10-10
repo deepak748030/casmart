@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
     Dialog,
     DialogContent,
@@ -7,9 +8,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { type Product } from "@/api/productApi";
+import { type Product, getProductImageUrl } from "@/api/productApi";
 import { Card } from "@/components/ui/card";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
 
 interface ProductPreviewDialogProps {
     product: Product | null;
@@ -22,9 +24,24 @@ export default function ProductPreviewDialog({
     open,
     onOpenChange,
 }: ProductPreviewDialogProps) {
+    const [api, setApi] = useState<CarouselApi>();
+    const [current, setCurrent] = useState(0);
+
     if (!product) return null;
 
     const hasDiscount = product.discountedAmount && product.discountedAmount < product.amount;
+
+    // Get the number of images
+    const imageCount = product.imageUrls?.length || 0;
+
+    // Update current slide when carousel changes
+    useEffect(() => {
+        if (!api) return;
+
+        api.on("select", () => {
+            setCurrent(api.selectedScrollSnap());
+        });
+    }, [api]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -36,33 +53,74 @@ export default function ProductPreviewDialog({
                 <ScrollArea className="h-[calc(90vh-100px)] pr-4">
                     <div className="space-y-6">
                         {/* Images */}
-                        {product.imageUrls && product.imageUrls.length > 0 && (
-                            <div>
-                                <h3 className="font-semibold text-lg mb-4">Product Images</h3>
-                                <Carousel className="w-full">
+                        {imageCount > 0 && (
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="font-semibold text-lg">Product Images</h3>
+                                    <Badge variant="secondary">
+                                        {imageCount} {imageCount === 1 ? 'image' : 'images'}
+                                    </Badge>
+                                </div>
+
+                                {/* Main Carousel */}
+                                <Carousel className="w-full" setApi={setApi}>
                                     <CarouselContent>
-                                        {product.imageUrls.map((imageUrl, index) => (
+                                        {Array.from({ length: imageCount }).map((_, index) => (
                                             <CarouselItem key={index}>
-                                                <div className="flex justify-center">
+                                                <div className="flex justify-center bg-muted/30 rounded-lg p-4">
                                                     <img
-                                                        src={imageUrl}
-                                                        alt={`${product.title} - ${index + 1}`}
+                                                        src={getProductImageUrl(product._id, index)}
+                                                        alt={`${product.title} - Image ${index + 1}`}
                                                         className="rounded-lg max-h-96 object-contain"
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = "/placeholder.svg";
+                                                        }}
                                                     />
                                                 </div>
                                             </CarouselItem>
                                         ))}
                                     </CarouselContent>
-                                    {product.imageUrls.length > 1 && (
+                                    {imageCount > 1 && (
                                         <>
                                             <CarouselPrevious />
                                             <CarouselNext />
                                         </>
                                     )}
                                 </Carousel>
-                                <p className="text-sm text-muted-foreground text-center mt-2">
-                                    {product.imageUrls.length} {product.imageUrls.length === 1 ? 'image' : 'images'}
-                                </p>
+
+                                {/* Image counter */}
+                                {imageCount > 1 && (
+                                    <p className="text-sm text-muted-foreground text-center">
+                                        Image {current + 1} of {imageCount}
+                                    </p>
+                                )}
+
+                                {/* Thumbnail Grid */}
+                                {imageCount > 1 && (
+                                    <div className="grid grid-cols-6 gap-2">
+                                        {Array.from({ length: imageCount }).map((_, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => api?.scrollTo(index)}
+                                                className={cn(
+                                                    "relative aspect-square rounded-md overflow-hidden border-2 transition-all hover:opacity-80",
+                                                    current === index
+                                                        ? "border-primary ring-2 ring-primary ring-offset-2"
+                                                        : "border-transparent"
+                                                )}
+                                            >
+                                                <img
+                                                    src={getProductImageUrl(product._id, index)}
+                                                    alt={`Thumbnail ${index + 1}`}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        e.currentTarget.src = "/placeholder.svg";
+                                                    }}
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
 
