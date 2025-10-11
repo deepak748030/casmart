@@ -333,7 +333,7 @@ export default function AdminDashboard() {
                         </Tabs>
                     </div>
                 </CardHeader>
-                <CardContent className="px-2 sm:px-6">
+                <CardContent className="px-0 sm:px-6">
                     {loadingSales ? (
                         <div className="h-64 sm:h-80 flex items-center justify-center">
                             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
@@ -343,60 +343,65 @@ export default function AdminDashboard() {
                             <p className="text-sm text-muted-foreground text-center px-4">No sales data available for this period</p>
                         </div>
                     ) : (
-                        <ChartContainer config={chartConfig} className="h-64 sm:h-80">
-                            <AreaChart data={formatChartData(salesData)} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
-                                <defs>
-                                    <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                                    </linearGradient>
-                                    <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                                <XAxis
-                                    dataKey="date"
-                                    className="text-[10px] sm:text-xs"
-                                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                                    angle={-45}
-                                    textAnchor="end"
-                                    height={60}
-                                />
-                                <YAxis
-                                    yAxisId="left"
-                                    className="text-[10px] sm:text-xs"
-                                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                                />
-                                <YAxis
-                                    yAxisId="right"
-                                    orientation="right"
-                                    className="text-[10px] sm:text-xs"
-                                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                                />
-                                <ChartTooltip content={<ChartTooltipContent />} />
-                                <ChartLegend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px' }} />
-                                <Area
-                                    yAxisId="left"
-                                    type="monotone"
-                                    dataKey="sales"
-                                    stroke="hsl(var(--primary))"
-                                    fill="url(#salesGradient)"
-                                    strokeWidth={2}
-                                    name="Sales (₹)"
-                                />
-                                <Area
-                                    yAxisId="right"
-                                    type="monotone"
-                                    dataKey="orders"
-                                    stroke="hsl(var(--accent))"
-                                    fill="url(#ordersGradient)"
-                                    strokeWidth={2}
-                                    name="Orders"
-                                />
-                            </AreaChart>
-                        </ChartContainer>
+                        <div className="w-full overflow-hidden">
+                            <ChartContainer config={chartConfig} className="h-64 sm:h-80 w-full">
+                                <AreaChart data={formatChartData(salesData)} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                                        </linearGradient>
+                                        <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                                    <XAxis
+                                        dataKey="date"
+                                        className="text-[10px] sm:text-xs"
+                                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                        angle={-45}
+                                        textAnchor="end"
+                                        height={70}
+                                        interval="preserveStartEnd"
+                                    />
+                                    <YAxis
+                                        yAxisId="left"
+                                        className="text-[10px] sm:text-xs"
+                                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                        width={40}
+                                    />
+                                    <YAxis
+                                        yAxisId="right"
+                                        orientation="right"
+                                        className="text-[10px] sm:text-xs"
+                                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                        width={40}
+                                    />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <ChartLegend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px' }} />
+                                    <Area
+                                        yAxisId="left"
+                                        type="monotone"
+                                        dataKey="sales"
+                                        stroke="hsl(var(--primary))"
+                                        fill="url(#salesGradient)"
+                                        strokeWidth={2}
+                                        name="Sales (₹)"
+                                    />
+                                    <Area
+                                        yAxisId="right"
+                                        type="monotone"
+                                        dataKey="orders"
+                                        stroke="hsl(var(--accent))"
+                                        fill="url(#ordersGradient)"
+                                        strokeWidth={2}
+                                        name="Orders"
+                                    />
+                                </AreaChart>
+                            </ChartContainer>
+                        </div>
                     )}
                 </CardContent>
             </Card>
@@ -501,7 +506,7 @@ export default function AdminDashboard() {
                         <CardTitle className="text-base sm:text-lg text-foreground">Average Order Value</CardTitle>
                         <p className="text-xs sm:text-sm text-muted-foreground">Track average order value trends</p>
                     </CardHeader>
-                    <CardContent className="px-2 sm:px-6">
+                    <CardContent className="px-0 sm:px-6">
                         {loadingSales ? (
                             <div className="h-64 sm:h-80 flex items-center justify-center">
                                 <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-primary border-r-transparent"></div>
@@ -511,30 +516,34 @@ export default function AdminDashboard() {
                                 <p className="text-sm text-muted-foreground text-center px-4">No data available</p>
                             </div>
                         ) : (
-                            <ChartContainer config={{ avgOrder: { label: "Avg Order", color: "hsl(var(--accent))" } }} className="h-64 sm:h-80">
-                                <BarChart data={formatChartData(salesData)} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                                    <XAxis
-                                        dataKey="date"
-                                        className="text-[10px] sm:text-xs"
-                                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                                        angle={-45}
-                                        textAnchor="end"
-                                        height={60}
-                                    />
-                                    <YAxis
-                                        className="text-[10px] sm:text-xs"
-                                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                                    />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <Bar
-                                        dataKey="avgOrder"
-                                        fill="hsl(var(--accent))"
-                                        radius={[4, 4, 0, 0]}
-                                        name="Avg Order (₹)"
-                                    />
-                                </BarChart>
-                            </ChartContainer>
+                            <div className="w-full overflow-hidden">
+                                <ChartContainer config={{ avgOrder: { label: "Avg Order", color: "hsl(var(--accent))" } }} className="h-64 sm:h-80 w-full">
+                                    <BarChart data={formatChartData(salesData)} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                                        <XAxis
+                                            dataKey="date"
+                                            className="text-[10px] sm:text-xs"
+                                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                            angle={-45}
+                                            textAnchor="end"
+                                            height={70}
+                                            interval="preserveStartEnd"
+                                        />
+                                        <YAxis
+                                            className="text-[10px] sm:text-xs"
+                                            tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                            width={50}
+                                        />
+                                        <ChartTooltip content={<ChartTooltipContent />} />
+                                        <Bar
+                                            dataKey="avgOrder"
+                                            fill="hsl(var(--accent))"
+                                            radius={[4, 4, 0, 0]}
+                                            name="Avg Order (₹)"
+                                        />
+                                    </BarChart>
+                                </ChartContainer>
+                            </div>
                         )}
                     </CardContent>
                 </Card>

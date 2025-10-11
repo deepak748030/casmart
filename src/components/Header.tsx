@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ShoppingCart, Heart, User, Menu, X, Phone, Mail, MapPin, IndianRupee, Truck, Shield, Award, Package } from "lucide-react";
+import { ShoppingCart, Heart, User, Menu, X, Phone, Mail, MapPin, IndianRupee, Truck, Shield, Award, Package, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
 import { Badge } from "@/components/ui/badge";
@@ -86,37 +86,41 @@ export const Header = () => {
                 </Button>
               </Link>
 
-              <div className="w-px h-8 bg-border mx-1" />
+              {user && (
+                <>
+                  <div className="w-px h-8 bg-border mx-1" />
 
-              <Link to="/cart">
-                <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 relative hover:bg-muted hover:text-primary transition-colors">
-                  <div className="relative">
-                    <ShoppingCart className="h-5 w-5" />
-                    {getCartCount() > 0 && (
-                      <Badge className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
-                        {getCartCount()}
-                      </Badge>
-                    )}
-                  </div>
-                  <span className="text-xs font-medium">Cart</span>
-                </Button>
-              </Link>
+                  <Link to="/cart">
+                    <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 relative hover:bg-muted hover:text-primary transition-colors">
+                      <div className="relative">
+                        <ShoppingCart className="h-5 w-5" />
+                        {getCartCount() > 0 && (
+                          <Badge className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
+                            {getCartCount()}
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="text-xs font-medium">Cart</span>
+                    </Button>
+                  </Link>
 
-              <div className="w-px h-8 bg-border mx-1" />
+                  <div className="w-px h-8 bg-border mx-1" />
 
-              <Link to="/wishlist">
-                <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 relative hover:bg-muted hover:text-primary transition-colors">
-                  <div className="relative">
-                    <Heart className="h-5 w-5" />
-                    {getWishlistCount() > 0 && (
-                      <Badge variant="destructive" className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
-                        {getWishlistCount()}
-                      </Badge>
-                    )}
-                  </div>
-                  <span className="text-xs font-medium">Wishlist</span>
-                </Button>
-              </Link>
+                  <Link to="/wishlist">
+                    <Button variant="ghost" size="sm" className="flex flex-col items-center gap-1 h-auto py-2 px-3 relative hover:bg-muted hover:text-primary transition-colors">
+                      <div className="relative">
+                        <Heart className="h-5 w-5" />
+                        {getWishlistCount() > 0 && (
+                          <Badge variant="destructive" className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
+                            {getWishlistCount()}
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="text-xs font-medium">Wishlist</span>
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -165,8 +169,9 @@ export const Header = () => {
               <li>
                 <NavLink
                   to="/"
+                  end
                   className={({ isActive }) =>
-                    `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
+                    `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-colors font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
                   }
                 >
                   Home
@@ -175,7 +180,7 @@ export const Header = () => {
               <li>
                 <a
                   href="/#shop"
-                  className="px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide scroll-smooth"
+                  className="px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-colors font-semibold uppercase text-sm tracking-wide scroll-smooth"
                 >
                   Shop
                 </a>
@@ -184,7 +189,7 @@ export const Header = () => {
                 <NavLink
                   to="/about"
                   className={({ isActive }) =>
-                    `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
+                    `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-colors font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
                   }
                 >
                   About
@@ -193,7 +198,7 @@ export const Header = () => {
               <li>
                 <a
                   href="/#blog"
-                  className="px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide scroll-smooth"
+                  className="px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-colors font-semibold uppercase text-sm tracking-wide scroll-smooth"
                 >
                   Blog
                 </a>
@@ -202,7 +207,7 @@ export const Header = () => {
                 <NavLink
                   to="/contact"
                   className={({ isActive }) =>
-                    `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
+                    `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-colors font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
                   }
                 >
                   Contact
@@ -213,7 +218,7 @@ export const Header = () => {
                   <NavLink
                     to="/my-orders"
                     className={({ isActive }) =>
-                      `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
+                      `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-colors font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
                     }
                   >
                     My Orders
@@ -225,7 +230,7 @@ export const Header = () => {
                   <NavLink
                     to="/admin"
                     className={({ isActive }) =>
-                      `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-all font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
+                      `px-4 lg:px-6 py-2 rounded-md text-foreground hover:text-primary hover:bg-muted transition-colors font-semibold uppercase text-sm tracking-wide ${isActive ? 'text-primary bg-muted' : ''}`
                     }
                   >
                     Dashboard
@@ -265,116 +270,163 @@ export const Header = () => {
               </Button>
             </div>
 
-            <div className="overflow-y-auto h-[calc(100%-60px)]">
-              <li>
-                <NavLink
-                  to="/"
-                  onClick={toggleMobileMenu}
-                  className={({ isActive }) =>
-                    `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
-                    }`
-                  }
-                >
-                  Home
-                </NavLink>
-              </li>
-              <li>
-                <a
-                  href="/#shop"
-                  onClick={toggleMobileMenu}
-                  className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border"
-                >
-                  Shop
-                </a>
-              </li>
-              <li>
-                <NavLink
-                  to="/about"
-                  onClick={toggleMobileMenu}
-                  className={({ isActive }) =>
-                    `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
-                    }`
-                  }
-                >
-                  About
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/contact"
-                  onClick={toggleMobileMenu}
-                  className={({ isActive }) =>
-                    `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
-                    }`
-                  }
-                >
-                  Contact
-                </NavLink>
-              </li>
-
-              {user ? (
-                <>
-                  <li className="py-4 px-4 flex items-center gap-3 border-b border-border">
-                    <User className="h-5 w-5" />
-                    <Link to="/profile" onClick={toggleMobileMenu}>
-                      My Profile
-                    </Link>
-                  </li>
-                  <li className="py-4 px-4 border-b border-border">
-                    <Button
-                      variant="destructive"
-                      className="w-full"
-                      onClick={() => {
-                        logout();
-                        toggleMobileMenu();
-                      }}
-                    >
-                      Logout
-                    </Button>
-                  </li>
-                </>
-              ) : (
-                <li className="py-4 px-4 flex items-center gap-3 border-b border-border">
-                  <User className="h-5 w-5" />
-                  <Link to="/login" onClick={toggleMobileMenu}>
-                    Login / Signup
-                  </Link>
-                </li>
-              )}
-
-              <li className="py-4 px-4 flex items-center gap-3 border-b border-border">
-                <ShoppingCart className="h-5 w-5" />
-                <Link to="/cart" onClick={toggleMobileMenu}>
-                  Cart
-                </Link>
-                {getCartCount() > 0 && (
-                  <Badge className="ml-auto h-5 w-5 flex items-center justify-center">{getCartCount()}</Badge>
-                )}
-              </li>
-
-              <li className="py-4 px-4 flex items-center gap-3 border-b border-border">
-                <Heart className="h-5 w-5" />
-                <Link to="/wishlist" onClick={toggleMobileMenu}>
-                  Wishlist
-                </Link>
-                {getWishlistCount() > 0 && (
-                  <Badge variant="destructive" className="ml-auto h-5 w-5 flex items-center justify-center">{getWishlistCount()}</Badge>
-                )}
-              </li>
-
-              {user?.role === "admin" && (
+            <div className="flex flex-col h-[calc(100%-60px)]">
+              <div className="flex-1 overflow-y-auto">
                 <li>
                   <NavLink
-                    to="/admin"
+                    to="/"
                     onClick={toggleMobileMenu}
+                    end
                     className={({ isActive }) =>
-                      `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                      `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-colors font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
                       }`
                     }
                   >
-                    Admin Dashboard
+                    Home
                   </NavLink>
                 </li>
+                <li>
+                  <NavLink
+                    to="/#shop"
+                    onClick={toggleMobileMenu}
+                    className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-colors font-semibold border-b border-border"
+                  >
+                    Shop
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/about"
+                    onClick={toggleMobileMenu}
+                    className={({ isActive }) =>
+                      `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-colors font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                      }`
+                    }
+                  >
+                    About
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/contact"
+                    onClick={toggleMobileMenu}
+                    className={({ isActive }) =>
+                      `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-colors font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                      }`
+                    }
+                  >
+                    Contact
+                  </NavLink>
+                </li>
+
+                {user ? (
+                  <>
+                    <li>
+                      <NavLink
+                        to="/profile"
+                        onClick={toggleMobileMenu}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-colors font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                          }`
+                        }
+                      >
+                        <User className="h-5 w-5" />
+                        <span>My Profile</span>
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/my-orders"
+                        onClick={toggleMobileMenu}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-colors font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                          }`
+                        }
+                      >
+                        <Package className="h-5 w-5" />
+                        <span>My Orders</span>
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/cart"
+                        onClick={toggleMobileMenu}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-colors font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                          }`
+                        }
+                      >
+                        <ShoppingCart className="h-5 w-5" />
+                        <span>Cart</span>
+                        {getCartCount() > 0 && (
+                          <Badge className="ml-auto h-5 w-5 flex items-center justify-center text-xs">{getCartCount()}</Badge>
+                        )}
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/wishlist"
+                        onClick={toggleMobileMenu}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-colors font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                          }`
+                        }
+                      >
+                        <Heart className="h-5 w-5" />
+                        <span>Wishlist</span>
+                        {getWishlistCount() > 0 && (
+                          <Badge variant="destructive" className="ml-auto h-5 w-5 flex items-center justify-center text-xs">{getWishlistCount()}</Badge>
+                        )}
+                      </NavLink>
+                    </li>
+                    {user.role === "admin" && (
+                      <li>
+                        <NavLink
+                          to="/admin"
+                          onClick={toggleMobileMenu}
+                          className={({ isActive }) =>
+                            `flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-colors font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                            }`
+                          }
+                        >
+                          <Shield className="h-5 w-5" />
+                          <span>Admin Dashboard</span>
+                        </NavLink>
+                      </li>
+                    )}
+                  </>
+                ) : (
+                  <li>
+                    <NavLink
+                      to="/login"
+                      onClick={toggleMobileMenu}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-colors font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                        }`
+                      }
+                    >
+                      <User className="h-5 w-5" />
+                      <span>Login / Signup</span>
+                    </NavLink>
+                  </li>
+                )}
+              </div>
+
+              {/* Logout button at bottom - only show for logged in users */}
+              {user && (
+                <div className="p-4 border-t border-border bg-background">
+                  <Button
+                    variant="destructive"
+                    className="w-full flex items-center justify-center gap-2"
+                    onClick={() => {
+                      logout();
+                      toggleMobileMenu();
+                    }}
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span>Logout</span>
+                  </Button>
+                </div>
               )}
             </div>
           </ul>
