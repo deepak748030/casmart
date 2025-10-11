@@ -248,131 +248,107 @@ export const Header = () => {
           </div>
 
           {/* Mobile Menu */}
-          <ul className={`md:hidden ${isMobileMenuOpen ? "block" : "hidden"} border-t-2 border-border bg-background relative z-50`}>
-            <li className="bg-background">
-              <NavLink
-                to="/"
+          {/* Mobile Menu */}
+          <ul
+            className={`md:hidden fixed top-0 left-0 h-full w-4/5 max-w-sm bg-background shadow-lg z-50 transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+              }`}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <Logo className="text-lg" />
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={toggleMobileMenu}
-                className={({ isActive }) =>
-                  `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''}`
-                }
+                className="rounded-full hover:bg-muted"
               >
-                Home
-              </NavLink>
-            </li>
-            <li className="bg-background">
-              <a
-                href="/#shop"
-                onClick={toggleMobileMenu}
-                className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border"
-              >
-                Shop
-              </a>
-            </li>
-            <li className="bg-background">
-              <NavLink
-                to="/about"
-                onClick={toggleMobileMenu}
-                className={({ isActive }) =>
-                  `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''}`
-                }
-              >
-                About
-              </NavLink>
-            </li>
-            <li className="bg-background">
-              <a
-                href="/#blog"
-                onClick={toggleMobileMenu}
-                className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border"
-              >
-                Blog
-              </a>
-            </li>
-            <li className="bg-background">
-              <NavLink
-                to="/contact"
-                onClick={toggleMobileMenu}
-                className={({ isActive }) =>
-                  `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b-2 border-border ${isActive ? 'bg-muted text-primary' : ''}`
-                }
-              >
-                Contact
-              </NavLink>
-            </li>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
 
-            {/* Mobile Actions */}
-            <li className="border-b border-border bg-background">
-              <Link to={user ? "/profile" : "/login"} onClick={toggleMobileMenu} className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
+            <div className="overflow-y-auto h-[calc(100%-60px)]">
+              <li>
+                <NavLink
+                  to="/"
+                  onClick={toggleMobileMenu}
+                  className={({ isActive }) =>
+                    `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                    }`
+                  }
+                >
+                  Home
+                </NavLink>
+              </li>
+              <li>
+                <a
+                  href="/#shop"
+                  onClick={toggleMobileMenu}
+                  className="block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border"
+                >
+                  Shop
+                </a>
+              </li>
+              <li>
+                <NavLink
+                  to="/about"
+                  onClick={toggleMobileMenu}
+                  className={({ isActive }) =>
+                    `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                    }`
+                  }
+                >
+                  About
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/contact"
+                  onClick={toggleMobileMenu}
+                  className={({ isActive }) =>
+                    `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                    }`
+                  }
+                >
+                  Contact
+                </NavLink>
+              </li>
+
+              <li className="py-4 px-4 flex items-center gap-3 border-b border-border">
                 <User className="h-5 w-5" />
-                <span className="font-semibold">{user ? 'My Profile' : 'My Account'}</span>
-              </Link>
-            </li>
-            {user && (
-              <li className="border-b border-border bg-background">
-                <Link to="/my-orders" onClick={toggleMobileMenu} className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
-                  <Package className="h-5 w-5" />
-                  <span className="font-semibold">My Orders</span>
+                <Link to={user ? "/profile" : "/login"} onClick={toggleMobileMenu}>
+                  {user ? 'My Profile' : 'Login / Signup'}
                 </Link>
               </li>
-            )}
-            {user?.role === 'admin' && (
-              <li className="border-b border-border bg-background">
-                <Link to="/admin" onClick={toggleMobileMenu} className="flex items-center gap-3 py-4 px-4 text-foreground hover:bg-muted transition-all">
-                  <Shield className="h-5 w-5" />
-                  <span className="font-semibold">Admin Dashboard</span>
-                </Link>
-              </li>
-            )}
-            <li className="border-b border-border bg-background">
-              <Link to="/cart" onClick={toggleMobileMenu} className="flex items-center justify-between py-4 px-4 text-foreground hover:bg-muted transition-all">
-                <div className="flex items-center gap-3">
-                  <ShoppingCart className="h-5 w-5" />
-                  <span className="font-semibold">Shopping Cart</span>
-                </div>
-                {getCartCount() > 0 && (
-                  <Badge className="h-6 w-6 p-0 flex items-center justify-center">
-                    {getCartCount()}
-                  </Badge>
-                )}
-              </Link>
-            </li>
-            <li className="border-b border-border bg-background">
-              <Link to="/wishlist" onClick={toggleMobileMenu} className="flex items-center justify-between py-4 px-4 text-foreground hover:bg-muted transition-all">
-                <div className="flex items-center gap-3">
-                  <Heart className="h-5 w-5" />
-                  <span className="font-semibold">Wishlist</span>
-                </div>
-                {getWishlistCount() > 0 && (
-                  <Badge variant="destructive" className="h-6 w-6 p-0 flex items-center justify-center">
-                    {getWishlistCount()}
-                  </Badge>
-                )}
-              </Link>
-            </li>
 
-            {/* Mobile Features */}
-            <li className="py-4 px-4 bg-muted/50">
-              <div className="grid grid-cols-2 gap-3 bg-card p-3 rounded-md border border-border">
-                <div className="flex items-center gap-2 text-sm">
-                  <Truck className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">Free Shipping</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Shield className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">Secure</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <IndianRupee className="h-4 w-4 text-accent" />
-                  <span className="text-muted-foreground">Best Price</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Award className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">Trusted</span>
-                </div>
-              </div>
-            </li>
+              <li className="py-4 px-4 flex items-center gap-3 border-b border-border">
+                <ShoppingCart className="h-5 w-5" />
+                <Link to="/cart" onClick={toggleMobileMenu}>
+                  Cart
+                </Link>
+                {getCartCount() > 0 && (
+                  <Badge className="ml-auto h-5 w-5 flex items-center justify-center">{getCartCount()}</Badge>
+                )}
+              </li>
+
+              <li className="py-4 px-4 flex items-center gap-3 border-b border-border">
+                <Heart className="h-5 w-5" />
+                <Link to="/wishlist" onClick={toggleMobileMenu}>
+                  Wishlist
+                </Link>
+                {getWishlistCount() > 0 && (
+                  <Badge variant="destructive" className="ml-auto h-5 w-5 flex items-center justify-center">{getWishlistCount()}</Badge>
+                )}
+              </li>
+            </div>
           </ul>
+
+          {/* Mobile Overlay */}
+          {isMobileMenuOpen && (
+            <div
+              className="fixed inset-0 bg-black/40 z-40 md:hidden"
+              onClick={toggleMobileMenu}
+            />
+          )}
+
         </div>
       </nav>
 
