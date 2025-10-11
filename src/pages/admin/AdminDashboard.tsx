@@ -28,6 +28,15 @@ import {
     CartesianGrid,
     ResponsiveContainer
 } from "recharts";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function AdminDashboard() {
     const [recentActivities, setRecentActivities] = useState<ActivityLog[]>([]);
@@ -35,6 +44,9 @@ export default function AdminDashboard() {
     const [salesData, setSalesData] = useState<SalesDataPoint[]>([]);
     const [loadingSales, setLoadingSales] = useState(true);
     const [timeRange, setTimeRange] = useState<'7days' | '30days' | '12months'>('30days');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalActivities, setTotalActivities] = useState(0);
+    const activitiesPerPage = 5;
     const [stats, setStats] = useState({
         totalUsers: 0,
         totalCategories: 0,
@@ -48,7 +60,7 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         fetchAllData();
-    }, [timeRange]);
+    }, [timeRange, currentPage]);
 
     const fetchAllData = async () => {
         await Promise.all([
@@ -61,13 +73,23 @@ export default function AdminDashboard() {
     const fetchRecentActivities = async () => {
         try {
             setLoadingActivities(true);
-            const response = await getActivityLogs({ limit: 10 });
+            const response = await getActivityLogs({
+                limit: activitiesPerPage,
+                page: currentPage
+            });
             setRecentActivities(response.data.activities);
+            setTotalActivities(response.total || 0);
         } catch (error) {
             console.error('Error fetching activities:', error);
         } finally {
             setLoadingActivities(false);
         }
+    };
+
+    const totalPages = Math.ceil(totalActivities / activitiesPerPage);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
     };
 
     const fetchSalesData = async () => {
@@ -241,16 +263,16 @@ export default function AdminDashboard() {
     ];
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
-                    <h2 className="text-3xl font-bold text-foreground">Dashboard Overview</h2>
-                    <p className="text-muted-foreground mt-1">Monitor your store's performance and analytics</p>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard Overview</h2>
+                    <p className="text-sm sm:text-base text-muted-foreground mt-1">Monitor your store's performance and analytics</p>
                 </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {loadingStats ? (
                     Array(4).fill(0).map((_, i) => (
                         <Card key={i} className="border-border">
@@ -271,20 +293,20 @@ export default function AdminDashboard() {
 
                         return (
                             <Card key={stat.title} className="border-border hover-lift transition-smooth">
-                                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                                         {stat.title}
                                     </CardTitle>
-                                    <div className={`p-2.5 rounded-lg ${stat.bgColor}`}>
-                                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                                    <div className={`p-2 sm:p-2.5 rounded-lg ${stat.bgColor}`}>
+                                        <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color}`} />
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold text-foreground mb-1">{stat.value}</div>
+                                    <div className="text-xl sm:text-2xl font-bold text-foreground mb-1 truncate">{stat.value}</div>
                                     {stat.change !== 0 && (
                                         <div className={`flex items-center gap-1 text-xs font-medium ${isPositive ? 'text-accent' : 'text-destructive'}`}>
                                             <ChangeIcon className="h-3 w-3" />
-                                            <span>{Math.abs(stat.change).toFixed(1)}% from last month</span>
+                                            <span className="truncate">{Math.abs(stat.change).toFixed(1)}% from last month</span>
                                         </div>
                                     )}
                                 </CardContent>
@@ -296,33 +318,33 @@ export default function AdminDashboard() {
 
             {/* Sales Analytics Chart */}
             <Card className="border-border">
-                <CardHeader>
-                    <div className="flex items-center justify-between">
+                <CardHeader className="space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
-                            <CardTitle className="text-foreground">Sales Analytics</CardTitle>
-                            <p className="text-sm text-muted-foreground mt-1">Revenue and orders over time</p>
+                            <CardTitle className="text-base sm:text-lg text-foreground">Sales Analytics</CardTitle>
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-1">Revenue and orders over time</p>
                         </div>
                         <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as typeof timeRange)}>
-                            <TabsList>
-                                <TabsTrigger value="7days">7 Days</TabsTrigger>
-                                <TabsTrigger value="30days">30 Days</TabsTrigger>
-                                <TabsTrigger value="12months">12 Months</TabsTrigger>
+                            <TabsList className="grid grid-cols-3 w-full sm:w-auto">
+                                <TabsTrigger value="7days" className="text-xs sm:text-sm">7D</TabsTrigger>
+                                <TabsTrigger value="30days" className="text-xs sm:text-sm">30D</TabsTrigger>
+                                <TabsTrigger value="12months" className="text-xs sm:text-sm">12M</TabsTrigger>
                             </TabsList>
                         </Tabs>
                     </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-2 sm:px-6">
                     {loadingSales ? (
-                        <div className="h-80 flex items-center justify-center">
+                        <div className="h-64 sm:h-80 flex items-center justify-center">
                             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
                         </div>
                     ) : salesData.length === 0 ? (
-                        <div className="h-80 flex items-center justify-center">
-                            <p className="text-muted-foreground">No sales data available for this period</p>
+                        <div className="h-64 sm:h-80 flex items-center justify-center">
+                            <p className="text-sm text-muted-foreground text-center px-4">No sales data available for this period</p>
                         </div>
                     ) : (
-                        <ChartContainer config={chartConfig} className="h-80">
-                            <AreaChart data={formatChartData(salesData)} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <ChartContainer config={chartConfig} className="h-64 sm:h-80">
+                            <AreaChart data={formatChartData(salesData)} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -336,22 +358,25 @@ export default function AdminDashboard() {
                                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                                 <XAxis
                                     dataKey="date"
-                                    className="text-xs"
+                                    className="text-[10px] sm:text-xs"
                                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                    angle={-45}
+                                    textAnchor="end"
+                                    height={60}
                                 />
                                 <YAxis
                                     yAxisId="left"
-                                    className="text-xs"
+                                    className="text-[10px] sm:text-xs"
                                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                                 />
                                 <YAxis
                                     yAxisId="right"
                                     orientation="right"
-                                    className="text-xs"
+                                    className="text-[10px] sm:text-xs"
                                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                                 />
                                 <ChartTooltip content={<ChartTooltipContent />} />
-                                <ChartLegend content={<ChartLegendContent />} />
+                                <ChartLegend content={<ChartLegendContent />} wrapperStyle={{ fontSize: '12px' }} />
                                 <Area
                                     yAxisId="left"
                                     type="monotone"
@@ -377,12 +402,12 @@ export default function AdminDashboard() {
             </Card>
 
             {/* Bottom Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 {/* Recent Activity */}
                 <Card className="border-border">
                     <CardHeader>
-                        <CardTitle className="text-foreground flex items-center gap-2">
-                            <Activity className="h-5 w-5" />
+                        <CardTitle className="text-base sm:text-lg text-foreground flex items-center gap-2">
+                            <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
                             Recent API Activity
                         </CardTitle>
                     </CardHeader>
@@ -392,34 +417,80 @@ export default function AdminDashboard() {
                                 <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-primary border-r-transparent"></div>
                             </div>
                         ) : recentActivities.length === 0 ? (
-                            <div className="text-center py-8 text-muted-foreground">
+                            <div className="text-center py-8 text-sm text-muted-foreground">
                                 No recent activity
                             </div>
                         ) : (
-                            <div className="space-y-3 max-h-96 overflow-y-auto">
-                                {recentActivities.map((activity) => (
-                                    <div key={activity._id} className="flex items-start justify-between py-2 border-b border-border last:border-0">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                {getMethodBadge(activity.method)}
-                                                {getStatusBadge(activity.statusCode)}
+                            <>
+                                <div className="space-y-3">
+                                    {recentActivities.map((activity) => (
+                                        <div key={activity._id} className="flex flex-col sm:flex-row sm:items-start sm:justify-between py-2 border-b border-border last:border-0 gap-2">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                    {getMethodBadge(activity.method)}
+                                                    {getStatusBadge(activity.statusCode)}
+                                                </div>
+                                                <p className="text-xs sm:text-sm font-mono text-foreground truncate">
+                                                    {activity.endpoint}
+                                                </p>
+                                                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                                                    {activity.user?.name || 'Anonymous'} • {format(new Date(activity.createdAt), 'MMM dd, HH:mm')}
+                                                </p>
                                             </div>
-                                            <p className="text-sm font-mono text-foreground truncate">
-                                                {activity.endpoint}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {activity.user?.name || 'Anonymous'} • {format(new Date(activity.createdAt), 'MMM dd, HH:mm')}
-                                            </p>
+                                            {activity.responseTime && (
+                                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                    <Clock className="h-3 w-3" />
+                                                    {activity.responseTime}ms
+                                                </div>
+                                            )}
                                         </div>
-                                        {activity.responseTime && (
-                                            <div className="flex items-center gap-1 text-xs text-muted-foreground ml-2">
-                                                <Clock className="h-3 w-3" />
-                                                {activity.responseTime}ms
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                                {totalPages > 1 && (
+                                    <Pagination className="mt-4">
+                                        <PaginationContent className="flex-wrap gap-1">
+                                            <PaginationItem>
+                                                <PaginationPrevious
+                                                    onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                                                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                                />
+                                            </PaginationItem>
+                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                                if (
+                                                    page === 1 ||
+                                                    page === totalPages ||
+                                                    (page >= currentPage - 1 && page <= currentPage + 1)
+                                                ) {
+                                                    return (
+                                                        <PaginationItem key={page}>
+                                                            <PaginationLink
+                                                                onClick={() => handlePageChange(page)}
+                                                                isActive={currentPage === page}
+                                                                className="cursor-pointer"
+                                                            >
+                                                                {page}
+                                                            </PaginationLink>
+                                                        </PaginationItem>
+                                                    );
+                                                } else if (page === currentPage - 2 || page === currentPage + 2) {
+                                                    return (
+                                                        <PaginationItem key={page}>
+                                                            <PaginationEllipsis />
+                                                        </PaginationItem>
+                                                    );
+                                                }
+                                                return null;
+                                            })}
+                                            <PaginationItem>
+                                                <PaginationNext
+                                                    onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                                                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                                />
+                                            </PaginationItem>
+                                        </PaginationContent>
+                                    </Pagination>
+                                )}
+                            </>
                         )}
                     </CardContent>
                 </Card>
@@ -427,29 +498,32 @@ export default function AdminDashboard() {
                 {/* Average Order Value Chart */}
                 <Card className="border-border">
                     <CardHeader>
-                        <CardTitle className="text-foreground">Average Order Value</CardTitle>
-                        <p className="text-sm text-muted-foreground">Track average order value trends</p>
+                        <CardTitle className="text-base sm:text-lg text-foreground">Average Order Value</CardTitle>
+                        <p className="text-xs sm:text-sm text-muted-foreground">Track average order value trends</p>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-2 sm:px-6">
                         {loadingSales ? (
-                            <div className="h-80 flex items-center justify-center">
+                            <div className="h-64 sm:h-80 flex items-center justify-center">
                                 <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-primary border-r-transparent"></div>
                             </div>
                         ) : salesData.length === 0 ? (
-                            <div className="h-80 flex items-center justify-center">
-                                <p className="text-muted-foreground">No data available</p>
+                            <div className="h-64 sm:h-80 flex items-center justify-center">
+                                <p className="text-sm text-muted-foreground text-center px-4">No data available</p>
                             </div>
                         ) : (
-                            <ChartContainer config={{ avgOrder: { label: "Avg Order", color: "hsl(var(--accent))" } }} className="h-80">
-                                <BarChart data={formatChartData(salesData)} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                            <ChartContainer config={{ avgOrder: { label: "Avg Order", color: "hsl(var(--accent))" } }} className="h-64 sm:h-80">
+                                <BarChart data={formatChartData(salesData)} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                                     <XAxis
                                         dataKey="date"
-                                        className="text-xs"
+                                        className="text-[10px] sm:text-xs"
                                         tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                                        angle={-45}
+                                        textAnchor="end"
+                                        height={60}
                                     />
                                     <YAxis
-                                        className="text-xs"
+                                        className="text-[10px] sm:text-xs"
                                         tick={{ fill: 'hsl(var(--muted-foreground))' }}
                                     />
                                     <ChartTooltip content={<ChartTooltipContent />} />

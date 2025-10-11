@@ -219,11 +219,11 @@ export default function AdminCategories() {
     );
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                    <h2 className="text-3xl font-bold text-foreground">Categories Management</h2>
-                    <p className="text-muted-foreground mt-1">Manage all product categories</p>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Categories Management</h2>
+                    <p className="text-sm sm:text-base text-muted-foreground mt-1">Manage all product categories</p>
                 </div>
                 <Button
                     onClick={() => {
@@ -231,6 +231,7 @@ export default function AdminCategories() {
                         setIsCreateDialogOpen(true);
                     }}
                     className="gap-2"
+                    size="sm"
                 >
                     <Plus className="h-4 w-4" />
                     Add Category
@@ -239,7 +240,7 @@ export default function AdminCategories() {
 
             <Card className="border-border">
                 <CardHeader>
-                    <CardTitle className="text-foreground">All Categories ({filteredCategories.length})</CardTitle>
+                    <CardTitle className="text-base sm:text-lg text-foreground">All Categories ({filteredCategories.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="mb-4">
@@ -249,7 +250,7 @@ export default function AdminCategories() {
                                 placeholder="Search categories..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10"
+                                className="pl-10 text-xs sm:text-sm"
                             />
                         </div>
                     </div>
@@ -257,25 +258,25 @@ export default function AdminCategories() {
                     {loading ? (
                         <div className="text-center py-12">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                            <p className="text-muted-foreground mt-4">Loading categories...</p>
+                            <p className="text-sm text-muted-foreground mt-4">Loading categories...</p>
                         </div>
                     ) : filteredCategories.length === 0 ? (
                         <div className="text-center py-12 border rounded-lg bg-muted/20">
                             <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                            <p className="text-muted-foreground">
+                            <p className="text-sm text-muted-foreground">
                                 {searchQuery ? "No categories found matching your search" : "No categories found"}
                             </p>
                         </div>
                     ) : (
-                        <div className="rounded-md border border-border overflow-hidden">
+                        <div className="rounded-md border border-border overflow-x-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-muted/50">
-                                        <TableHead className="font-semibold">Image</TableHead>
-                                        <TableHead className="font-semibold">Name</TableHead>
-                                        <TableHead className="font-semibold">Description</TableHead>
-                                        <TableHead className="font-semibold">Created</TableHead>
-                                        <TableHead className="text-right font-semibold">Actions</TableHead>
+                                        <TableHead className="font-semibold text-xs sm:text-sm">Image</TableHead>
+                                        <TableHead className="font-semibold text-xs sm:text-sm">Name</TableHead>
+                                        <TableHead className="font-semibold text-xs sm:text-sm hidden md:table-cell">Description</TableHead>
+                                        <TableHead className="font-semibold text-xs sm:text-sm hidden lg:table-cell">Created</TableHead>
+                                        <TableHead className="text-right font-semibold text-xs sm:text-sm">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -285,40 +286,40 @@ export default function AdminCategories() {
                                                 <img
                                                     src={`http://localhost:5000/api/categories/${category._id}/image`}
                                                     alt={category.name}
-                                                    className="w-16 h-16 object-cover rounded border border-border"
+                                                    className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded border border-border"
                                                     onError={(e) => {
                                                         e.currentTarget.style.display = 'none';
                                                         e.currentTarget.nextElementSibling?.classList.remove('hidden');
                                                     }}
                                                 />
-                                                <div className="w-16 h-16 bg-muted rounded flex items-center justify-center hidden">
-                                                    <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                                                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-muted rounded flex items-center justify-center hidden">
+                                                    <ImageIcon className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="font-medium text-foreground">{category.name}</TableCell>
-                                            <TableCell className="max-w-md truncate text-muted-foreground">
+                                            <TableCell className="font-medium text-foreground text-xs sm:text-sm">{category.name}</TableCell>
+                                            <TableCell className="max-w-[200px] sm:max-w-md truncate text-muted-foreground text-xs sm:text-sm hidden md:table-cell">
                                                 {category.description || "—"}
                                             </TableCell>
-                                            <TableCell className="text-muted-foreground">
+                                            <TableCell className="text-muted-foreground text-xs sm:text-sm hidden lg:table-cell">
                                                 {new Date(category.createdAt).toLocaleDateString()}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
+                                                <div className="flex justify-end gap-1 sm:gap-2">
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
                                                         onClick={() => openEditDialog(category)}
-                                                        className="hover:text-primary"
+                                                        className="hover:text-primary h-8 w-8"
                                                     >
-                                                        <Pencil className="h-4 w-4" />
+                                                        <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
                                                         onClick={() => openDeleteDialog(category)}
-                                                        className="hover:text-destructive"
+                                                        className="hover:text-destructive h-8 w-8"
                                                     >
-                                                        <Trash2 className="h-4 w-4" />
+                                                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                                                     </Button>
                                                 </div>
                                             </TableCell>

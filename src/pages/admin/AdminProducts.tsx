@@ -260,51 +260,51 @@ export default function AdminProducts() {
     const hasActiveFilters = searchQuery || (selectedCategory !== "all") || (stockFilter !== "all") || (sortBy !== "all");
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
+        <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <div>
-                    <h2 className="text-3xl font-bold">Products</h2>
-                    <p className="text-muted-foreground">Manage your product catalog</p>
+                    <h2 className="text-2xl sm:text-3xl font-bold">Products</h2>
+                    <p className="text-sm sm:text-base text-muted-foreground">Manage your product catalog</p>
                 </div>
-                <Button onClick={handleCreate}>
+                <Button onClick={handleCreate} size="sm" className="sm:size-default">
                     <Plus className="mr-2 h-4 w-4" />
                     Add Product
                 </Button>
             </div>
 
             {/* Filters */}
-            <Card className="p-4">
-                <div className="space-y-4">
+            <Card className="p-3 sm:p-4">
+                <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-between">
-                        <h3 className="font-semibold">Filters</h3>
+                        <h3 className="font-semibold text-sm sm:text-base">Filters</h3>
                         {hasActiveFilters && (
-                            <Button variant="ghost" size="sm" onClick={clearFilters}>
-                                <X className="mr-2 h-4 w-4" />
-                                Clear Filters
+                            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs sm:text-sm">
+                                <X className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                                Clear
                             </Button>
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                         {/* Search */}
                         <div>
-                            <label className="text-sm font-medium mb-2 block">Search</label>
+                            <label className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block">Search</label>
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Search products..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10"
+                                    className="pl-8 sm:pl-10 text-xs sm:text-sm h-9 sm:h-10"
                                 />
                             </div>
                         </div>
 
                         {/* Category Filter */}
                         <div>
-                            <label className="text-sm font-medium mb-2 block">Category</label>
+                            <label className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block">Category</label>
                             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                                <SelectTrigger>
+                                <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm">
                                     <SelectValue placeholder="All categories" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -320,9 +320,9 @@ export default function AdminProducts() {
 
                         {/* Stock Filter */}
                         <div>
-                            <label className="text-sm font-medium mb-2 block">Stock Status</label>
+                            <label className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block">Stock Status</label>
                             <Select value={stockFilter} onValueChange={setStockFilter}>
-                                <SelectTrigger>
+                                <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm">
                                     <SelectValue placeholder="All products" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -335,9 +335,9 @@ export default function AdminProducts() {
 
                         {/* Sort */}
                         <div>
-                            <label className="text-sm font-medium mb-2 block">Sort By</label>
+                            <label className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block">Sort By</label>
                             <Select value={sortBy} onValueChange={setSortBy}>
-                                <SelectTrigger>
+                                <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm">
                                     <SelectValue placeholder="Default" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -363,28 +363,28 @@ export default function AdminProducts() {
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
             ) : (
-                <div className="border rounded-lg">
+                <div className="border rounded-lg overflow-x-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Image</TableHead>
-                                <TableHead>Title</TableHead>
-                                <TableHead>SKU</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Stock</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead className="text-xs sm:text-sm">Image</TableHead>
+                                <TableHead className="text-xs sm:text-sm">Title</TableHead>
+                                <TableHead className="text-xs sm:text-sm hidden md:table-cell">SKU</TableHead>
+                                <TableHead className="text-xs sm:text-sm hidden lg:table-cell">Category</TableHead>
+                                <TableHead className="text-xs sm:text-sm">Price</TableHead>
+                                <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Stock</TableHead>
+                                <TableHead className="text-xs sm:text-sm hidden xl:table-cell">Status</TableHead>
+                                <TableHead className="text-right text-xs sm:text-sm">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {products.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="text-center text-muted-foreground h-32">
+                                    <TableCell colSpan={8} className="text-center text-muted-foreground h-32 text-xs sm:text-sm">
                                         No products found
                                         {hasActiveFilters && (
                                             <div className="mt-2">
-                                                <Button variant="link" onClick={clearFilters}>
+                                                <Button variant="link" onClick={clearFilters} className="text-xs sm:text-sm">
                                                     Clear filters
                                                 </Button>
                                             </div>
@@ -398,64 +398,68 @@ export default function AdminProducts() {
                                             <img
                                                 src={getProductImageUrl(product._id, 0)}
                                                 alt={product.title}
-                                                className="w-12 h-12 object-cover rounded"
+                                                className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded"
                                                 onError={(e) => {
                                                     e.currentTarget.src = "/placeholder.svg";
                                                 }}
                                             />
                                         </TableCell>
-                                        <TableCell className="font-medium max-w-xs truncate">
+                                        <TableCell className="font-medium text-xs sm:text-sm max-w-[120px] sm:max-w-xs truncate">
                                             {product.title}
                                         </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline">{product.SKU}</Badge>
+                                        <TableCell className="hidden md:table-cell">
+                                            <Badge variant="outline" className="text-[10px] sm:text-xs">{product.SKU}</Badge>
                                         </TableCell>
-                                        <TableCell>{product.category.name}</TableCell>
+                                        <TableCell className="text-xs sm:text-sm hidden lg:table-cell">{product.category.name}</TableCell>
                                         <TableCell>
                                             <div className="flex flex-col">
-                                                <span className="font-medium">
+                                                <span className="font-medium text-xs sm:text-sm whitespace-nowrap">
                                                     ₹{product.discountedAmount || product.amount}
                                                 </span>
                                                 {product.discountedAmount && product.discountedAmount < product.amount && (
-                                                    <span className="text-xs text-muted-foreground line-through">
+                                                    <span className="text-[10px] sm:text-xs text-muted-foreground line-through">
                                                         ₹{product.amount}
                                                     </span>
                                                 )}
                                             </div>
                                         </TableCell>
-                                        <TableCell>{product.totalStocks}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-xs sm:text-sm hidden sm:table-cell">{product.totalStocks}</TableCell>
+                                        <TableCell className="hidden xl:table-cell">
                                             <Badge
                                                 variant={product.inStock ? "default" : "destructive"}
+                                                className="text-[10px] sm:text-xs"
                                             >
                                                 {product.inStock ? "In Stock" : "Out of Stock"}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
+                                            <div className="flex justify-end gap-1 sm:gap-2">
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => handlePreview(product)}
                                                     title="Preview"
+                                                    className="h-8 w-8"
                                                 >
-                                                    <Eye className="h-4 w-4" />
+                                                    <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => handleEdit(product)}
                                                     title="Edit"
+                                                    className="h-8 w-8"
                                                 >
-                                                    <Pencil className="h-4 w-4" />
+                                                    <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => handleDelete(product)}
                                                     title="Delete"
+                                                    className="h-8 w-8"
                                                 >
-                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 text-destructive" />
                                                 </Button>
                                             </div>
                                         </TableCell>

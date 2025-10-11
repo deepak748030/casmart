@@ -45,18 +45,27 @@ export default function AdminLayout() {
     ];
 
     return (
-        <div className="flex h-screen bg-background overflow-hidden">
+        <div className="flex h-screen bg-background overflow-hidden w-full">
+            {/* Mobile Overlay */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
             <aside
                 className={cn(
-                    "bg-card border-r border-border transition-all duration-300 flex flex-col",
-                    sidebarOpen ? "w-64" : "w-20"
+                    "bg-card border-r border-border transition-all duration-300 flex flex-col fixed lg:static inset-y-0 left-0 z-50",
+                    "lg:translate-x-0",
+                    sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0 lg:w-20"
                 )}
             >
-                <div className="p-4 border-b border-border flex items-center justify-between">
+                <div className="p-4 border-b border-border flex items-center justify-between min-h-[64px]">
                     {sidebarOpen ? (
                         <>
-                            <Logo className="text-lg" />
+                            <Logo className="text-base sm:text-lg" />
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -71,40 +80,46 @@ export default function AdminLayout() {
                             variant="ghost"
                             size="icon"
                             onClick={() => setSidebarOpen(true)}
-                            className="mx-auto"
+                            className="mx-auto hidden lg:flex"
                         >
                             <Menu className="h-5 w-5" />
                         </Button>
                     )}
                 </div>
 
-                <nav className="flex-1 p-4 space-y-2">
+                <nav className="flex-1 p-3 sm:p-4 space-y-1 sm:space-y-2 overflow-y-auto">
                     {menuItems.map((item) => (
                         <NavLink
                             key={item.to}
                             to={item.to}
                             end={item.end}
+                            onClick={() => {
+                                // Close sidebar on mobile after clicking
+                                if (window.innerWidth < 1024) {
+                                    setSidebarOpen(false);
+                                }
+                            }}
                             className={({ isActive }) =>
                                 cn(
-                                    "flex items-center gap-3 px-3 py-3 rounded-lg transition-colors",
+                                    "flex items-center gap-3 px-3 py-2.5 sm:py-3 rounded-lg transition-colors",
                                     "hover:bg-muted hover:text-primary",
                                     isActive ? "bg-primary text-primary-foreground" : "text-foreground",
-                                    !sidebarOpen && "justify-center"
+                                    !sidebarOpen && "lg:justify-center"
                                 )
                             }
                         >
                             <item.icon className="h-5 w-5 flex-shrink-0" />
-                            {sidebarOpen && <span className="font-medium">{item.label}</span>}
+                            {sidebarOpen && <span className="font-medium text-sm sm:text-base">{item.label}</span>}
                         </NavLink>
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-border">
+                <div className="p-3 sm:p-4 border-t border-border">
                     <Button
                         variant="ghost"
                         className={cn(
-                            "w-full justify-start gap-3 hover:bg-destructive/10 hover:text-destructive",
-                            !sidebarOpen && "justify-center"
+                            "w-full justify-start gap-3 hover:bg-destructive/10 hover:text-destructive text-sm sm:text-base",
+                            !sidebarOpen && "lg:justify-center"
                         )}
                         onClick={handleLogout}
                     >
@@ -115,26 +130,26 @@ export default function AdminLayout() {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto w-full">
                 {/* Header */}
-                <header className="bg-card border-b border-border px-6 py-4 sticky top-0 z-10">
+                <header className="bg-card border-b border-border px-4 sm:px-6 py-3 sm:py-4 sticky top-0 z-30">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                                className="lg:hidden"
+                                className="flex-shrink-0"
                             >
                                 <Menu className="h-5 w-5" />
                             </Button>
-                            <div>
-                                <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-                                <p className="text-sm text-muted-foreground">Welcome back, {user.name}</p>
+                            <div className="min-w-0 flex-1">
+                                <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">Admin Dashboard</h1>
+                                <p className="text-xs sm:text-sm text-muted-foreground truncate">Welcome back, {user.name}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="hidden md:block text-right">
+                        <div className="hidden md:flex items-center gap-4">
+                            <div className="text-right">
                                 <p className="text-sm font-medium text-foreground">{user.name}</p>
                                 <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
                             </div>
@@ -143,7 +158,7 @@ export default function AdminLayout() {
                 </header>
 
                 {/* Page Content */}
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                     <Outlet />
                 </div>
             </main>
