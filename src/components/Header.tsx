@@ -11,7 +11,7 @@ import { useCart } from "@/contexts/CartContext";
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { getCartCount, getWishlistCount } = useCart();
 
   useEffect(() => {
@@ -312,12 +312,35 @@ export const Header = () => {
                 </NavLink>
               </li>
 
-              <li className="py-4 px-4 flex items-center gap-3 border-b border-border">
-                <User className="h-5 w-5" />
-                <Link to={user ? "/profile" : "/login"} onClick={toggleMobileMenu}>
-                  {user ? 'My Profile' : 'Login / Signup'}
-                </Link>
-              </li>
+              {user ? (
+                <>
+                  <li className="py-4 px-4 flex items-center gap-3 border-b border-border">
+                    <User className="h-5 w-5" />
+                    <Link to="/profile" onClick={toggleMobileMenu}>
+                      My Profile
+                    </Link>
+                  </li>
+                  <li className="py-4 px-4 border-b border-border">
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                      onClick={() => {
+                        logout();
+                        toggleMobileMenu();
+                      }}
+                    >
+                      Logout
+                    </Button>
+                  </li>
+                </>
+              ) : (
+                <li className="py-4 px-4 flex items-center gap-3 border-b border-border">
+                  <User className="h-5 w-5" />
+                  <Link to="/login" onClick={toggleMobileMenu}>
+                    Login / Signup
+                  </Link>
+                </li>
+              )}
 
               <li className="py-4 px-4 flex items-center gap-3 border-b border-border">
                 <ShoppingCart className="h-5 w-5" />
@@ -338,6 +361,21 @@ export const Header = () => {
                   <Badge variant="destructive" className="ml-auto h-5 w-5 flex items-center justify-center">{getWishlistCount()}</Badge>
                 )}
               </li>
+
+              {user?.role === "admin" && (
+                <li>
+                  <NavLink
+                    to="/admin"
+                    onClick={toggleMobileMenu}
+                    className={({ isActive }) =>
+                      `block py-4 px-4 text-foreground hover:bg-muted hover:text-primary transition-all font-semibold border-b border-border ${isActive ? 'bg-muted text-primary' : ''
+                      }`
+                    }
+                  >
+                    Admin Dashboard
+                  </NavLink>
+                </li>
+              )}
             </div>
           </ul>
 

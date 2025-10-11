@@ -13,104 +13,15 @@ import {
     Minus,
     Plus,
     ChevronLeft,
+    ChevronRight,
     Truck,
     Shield,
     RotateCcw,
     Loader2,
 } from "lucide-react";
-import { getProductById, getProductImageUrl, type Product } from "@/api/productApi";
+import { getProductById, getProductImageUrl, getAllProducts, type Product } from "@/api/productApi";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CartContext";
-import product1 from "@/assets/product-1.jpg";
-import product2 from "@/assets/product-2.jpg";
-import product3 from "@/assets/product-3.jpg";
-import product4 from "@/assets/product-4.jpg";
-import product5 from "@/assets/product-5.jpg";
-import product6 from "@/assets/product-6.jpg";
-
-const productImages = [product1, product2, product3, product4];
-
-const product = {
-    name: "Varsi Premium Leather Bag",
-    price: 3899,
-    oldPrice: 5199,
-    rating: 4.5,
-    reviews: 128,
-    inStock: true,
-    sku: "VAR-LB-001",
-    category: "Bags & Accessories",
-    description:
-        "Crafted from premium full-grain leather, this versatile bag combines timeless elegance with modern functionality. Perfect for daily use or special occasions, featuring multiple compartments and adjustable straps for maximum comfort.",
-    features: [
-        "100% Premium Full-Grain Leather",
-        "Multiple Interior & Exterior Pockets",
-        "Adjustable Leather Straps",
-        "YKK Premium Zippers",
-        "Water-Resistant Lining",
-        "Dimensions: 35 x 28 x 12 cm",
-    ],
-    colors: [
-        { name: "Black", value: "#000000" },
-        { name: "Brown", value: "#8B4513" },
-        { name: "Tan", value: "#D2B48C" },
-    ],
-    sizes: ["Small", "Medium", "Large"],
-};
-
-const relatedProducts = [
-    {
-        image: product5,
-        name: "Soft Touch Interlock Polo",
-        price: 3600,
-        rating: 4.4,
-    },
-    {
-        image: product6,
-        name: "Casmart Smart Watch",
-        price: 2400,
-        oldPrice: 3040,
-        rating: 4.7,
-    },
-    {
-        image: product2,
-        name: "Fit Twill Shirt for Woman",
-        price: 4960,
-        rating: 4.8,
-    },
-    {
-        image: product3,
-        name: "Grand Atlantic Chukka Boots",
-        price: 2560,
-        rating: 4.3,
-    },
-];
-
-const reviews = [
-    {
-        author: "Priya Sharma",
-        rating: 5,
-        date: "2 weeks ago",
-        comment:
-            "Absolutely love this bag! The leather quality is exceptional and it's so versatile. Worth every rupee.",
-        verified: true,
-    },
-    {
-        author: "Rahul Mehta",
-        rating: 4,
-        date: "1 month ago",
-        comment:
-            "Great quality and design. The only minor issue is that it took a while to break in, but now it's perfect.",
-        verified: true,
-    },
-    {
-        author: "Ananya Patel",
-        rating: 5,
-        date: "1 month ago",
-        comment:
-            "This is my third purchase from this brand. Never disappoints! The craftsmanship is outstanding.",
-        verified: true,
-    },
-];
 
 export default function ProductDetails() {
     const navigate = useNavigate();
@@ -123,6 +34,13 @@ export default function ProductDetails() {
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [selectedSize, setSelectedSize] = useState("");
+
+    // Related products states
+    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+    const [relatedLoading, setRelatedLoading] = useState(false);
+    const [relatedPage, setRelatedPage] = useState(1);
+    const [relatedHasMore, setRelatedHasMore] = useState(true);
+    const relatedLimit = 8;
 
     useEffect(() => {
         if (id) {
@@ -149,6 +67,41 @@ export default function ProductDetails() {
             setLoading(false);
         }
     };
+
+    const fetchRelatedProducts = async (pageNum: number, append = false) => {
+        if (!product?.category._id || relatedLoading) return;
+
+        try {
+            setRelatedLoading(true);
+            const response = await getAllProducts({
+                page: pageNum,
+                limit: relatedLimit,
+                category: product.category._id,
+            });
+
+            // Filter out current product
+            const filteredProducts = response.data.products.filter((p: Product) => p._id !== product._id);
+
+            if (append) {
+                setRelatedProducts(prev => [...prev, ...filteredProducts]);
+            } else {
+                setRelatedProducts(filteredProducts);
+            }
+
+            setRelatedHasMore(filteredProducts.length === relatedLimit);
+        } catch (error) {
+            console.error("Error fetching related products:", error);
+        } finally {
+            setRelatedLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (product?.category._id) {
+            setRelatedPage(1);
+            fetchRelatedProducts(1, false);
+        }
+    }, [product?.category._id]);
 
     if (loading) {
         return (
@@ -526,56 +479,133 @@ export default function ProductDetails() {
                     {/* Related Products */}
                     <div className="pb-8 md:pb-12">
                         <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center gradient-text">
-                            You May Also Like
+                            More from {product.category.name}
                         </h2>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                            {relatedProducts.map((item, index) => (
-                                <div
-                                    key={index}
-                                    className="group bg-card overflow-hidden shadow-soft hover:shadow-medium transition-all duration-500 hover:-translate-y-2 border border-border/50"
-                                >
-                                    <div className="relative aspect-[4/5] overflow-hidden bg-muted/30">
-                                        <img
-                                            src={item.image}
-                                            alt={item.name}
-                                            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
-                                        />
-                                    </div>
-                                    <div className="p-4 space-y-3">
-                                        <div className="flex items-center gap-1">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star
-                                                    key={i}
-                                                    className={`h-3.5 w-3.5 ${i < Math.floor(item.rating)
-                                                        ? "fill-amber-400 text-amber-400"
-                                                        : "fill-muted text-muted"
-                                                        }`}
-                                                />
-                                            ))}
-                                        </div>
-                                        <h3 className="font-semibold text-foreground line-clamp-2">
-                                            {item.name}
-                                        </h3>
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex items-center">
-                                                <IndianRupee className="h-4 w-4 text-foreground" />
-                                                <span className="text-xl font-bold text-foreground">
-                                                    {item.price.toLocaleString("en-IN")}
-                                                </span>
-                                            </div>
-                                            {item.oldPrice && (
-                                                <div className="flex items-center">
-                                                    <IndianRupee className="h-3 w-3 text-muted-foreground" />
-                                                    <span className="text-sm text-muted-foreground line-through">
-                                                        {item.oldPrice.toLocaleString("en-IN")}
-                                                    </span>
+
+                        {relatedProducts.length > 0 ? (
+                            <>
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                                    {relatedProducts.map((item) => {
+                                        const relatedDiscount = item.discountedAmount && item.amount
+                                            ? Math.round(((item.amount - item.discountedAmount) / item.amount) * 100)
+                                            : 0;
+                                        const relatedImageUrl = getProductImageUrl(item._id);
+
+                                        return (
+                                            <div
+                                                key={item._id}
+                                                onClick={() => navigate(`/product/${item._id}`)}
+                                                className="group bg-card overflow-hidden shadow-soft hover:shadow-medium transition-all duration-500 hover:-translate-y-2 border border-border/50 cursor-pointer"
+                                            >
+                                                <div className="relative aspect-[4/5] overflow-hidden bg-muted/30">
+                                                    <img
+                                                        src={relatedImageUrl}
+                                                        alt={item.title}
+                                                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400';
+                                                        }}
+                                                    />
+                                                    {relatedDiscount > 0 && (
+                                                        <Badge
+                                                            variant="destructive"
+                                                            className="absolute top-2 right-2 text-xs px-2 py-1"
+                                                        >
+                                                            -{relatedDiscount}%
+                                                        </Badge>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
+                                                <div className="p-3 md:p-4 space-y-2 md:space-y-3">
+                                                    <div className="flex items-center gap-1">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <Star
+                                                                key={i}
+                                                                className={`h-3 w-3 md:h-3.5 md:w-3.5 ${i < Math.floor(item.averageRating)
+                                                                    ? "fill-amber-400 text-amber-400"
+                                                                    : "fill-muted text-muted"
+                                                                    }`}
+                                                            />
+                                                        ))}
+                                                        <span className="text-xs text-muted-foreground ml-1">
+                                                            ({item.numOfReviews})
+                                                        </span>
+                                                    </div>
+                                                    <h3 className="font-semibold text-sm md:text-base text-foreground line-clamp-2">
+                                                        {item.title}
+                                                    </h3>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex items-center">
+                                                            <IndianRupee className="h-3.5 w-3.5 md:h-4 md:w-4 text-foreground" />
+                                                            <span className="text-base md:text-xl font-bold text-foreground">
+                                                                {(item.discountedAmount || item.amount).toLocaleString("en-IN")}
+                                                            </span>
+                                                        </div>
+                                                        {item.discountedAmount && item.discountedAmount < item.amount && (
+                                                            <div className="flex items-center">
+                                                                <IndianRupee className="h-2.5 w-2.5 md:h-3 md:w-3 text-muted-foreground" />
+                                                                <span className="text-xs md:text-sm text-muted-foreground line-through">
+                                                                    {item.amount.toLocaleString("en-IN")}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <Badge variant={item.inStock ? "default" : "destructive"} className="text-xs">
+                                                        {item.inStock ? "In Stock" : "Out of Stock"}
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            ))}
-                        </div>
+
+                                {/* Pagination Controls */}
+                                {(relatedPage > 1 || relatedHasMore) && (
+                                    <div className="flex justify-center items-center gap-4 mt-8">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                const newPage = relatedPage - 1;
+                                                setRelatedPage(newPage);
+                                                fetchRelatedProducts(newPage, false);
+                                            }}
+                                            disabled={relatedPage === 1 || relatedLoading}
+                                        >
+                                            <ChevronLeft className="h-4 w-4 mr-1" />
+                                            Previous
+                                        </Button>
+                                        <span className="text-sm text-muted-foreground">
+                                            Page {relatedPage}
+                                        </span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                const newPage = relatedPage + 1;
+                                                setRelatedPage(newPage);
+                                                fetchRelatedProducts(newPage, false);
+                                            }}
+                                            disabled={!relatedHasMore || relatedLoading}
+                                        >
+                                            Next
+                                            <ChevronRight className="h-4 w-4 ml-1" />
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {relatedLoading && (
+                                    <div className="flex justify-center mt-6">
+                                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            !relatedLoading && (
+                                <p className="text-center text-muted-foreground">
+                                    No related products found
+                                </p>
+                            )
+                        )}
                     </div>
                 </div>
             </main>

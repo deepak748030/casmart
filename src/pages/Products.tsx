@@ -192,10 +192,10 @@ const Products = () => {
                         {/* Filters Sidebar */}
                         <aside className={`lg:w-80 space-y-6 ${showFilters ? 'block' : 'hidden lg:block'}`}>
                             <Card>
-                                <CardContent className="p-6">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <h2 className="text-xl font-semibold flex items-center gap-2">
-                                            <Filter className="h-5 w-5" />
+                                <CardContent className="p-3 lg:p-6">
+                                    <div className="flex items-center justify-between mb-3 lg:mb-6">
+                                        <h2 className="text-lg lg:text-xl font-semibold flex items-center gap-2">
+                                            <Filter className="h-4 w-4 lg:h-5 lg:w-5" />
                                             Filters
                                         </h2>
                                         {activeFiltersCount > 0 && (
@@ -206,7 +206,96 @@ const Products = () => {
                                         )}
                                     </div>
 
-                                    <ScrollArea className="h-[calc(100vh-300px)]">
+                                    {/* Mobile: Compact Select Dropdowns */}
+                                    <div className="lg:hidden space-y-3">
+                                        {/* Category Select */}
+                                        <div>
+                                            <Label className="text-xs font-medium mb-1.5 block">Category</Label>
+                                            <Select
+                                                value={selectedCategories[0] || "all"}
+                                                onValueChange={(value) => {
+                                                    if (value === "all") {
+                                                        setSelectedCategories([]);
+                                                    } else {
+                                                        setSelectedCategories([value]);
+                                                    }
+                                                }}
+                                            >
+                                                <SelectTrigger className="h-9">
+                                                    <SelectValue placeholder="All Categories" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All Categories</SelectItem>
+                                                    {categories.map(category => (
+                                                        <SelectItem key={category._id} value={category._id}>
+                                                            {category.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        {/* Price Range Compact */}
+                                        <div>
+                                            <Label className="text-xs font-medium mb-1.5 block">Price Range</Label>
+                                            <div className="flex gap-2 items-center">
+                                                <Select
+                                                    value={priceRange[0].toString()}
+                                                    onValueChange={(value) => setPriceRange([parseInt(value), priceRange[1]])}
+                                                >
+                                                    <SelectTrigger className="h-9 flex-1">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="0">₹0</SelectItem>
+                                                        <SelectItem value="1000">₹1000</SelectItem>
+                                                        <SelectItem value="2000">₹2000</SelectItem>
+                                                        <SelectItem value="5000">₹5000</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <span className="text-xs text-muted-foreground">to</span>
+                                                <Select
+                                                    value={priceRange[1].toString()}
+                                                    onValueChange={(value) => setPriceRange([priceRange[0], parseInt(value)])}
+                                                >
+                                                    <SelectTrigger className="h-9 flex-1">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="2000">₹2000</SelectItem>
+                                                        <SelectItem value="5000">₹5000</SelectItem>
+                                                        <SelectItem value="8000">₹8000</SelectItem>
+                                                        <SelectItem value="10000">₹10000</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+
+                                        {/* Stock Status Select */}
+                                        <div>
+                                            <Label className="text-xs font-medium mb-1.5 block">Availability</Label>
+                                            <Select
+                                                value={inStock === undefined ? "all" : inStock ? "in" : "out"}
+                                                onValueChange={(value) => {
+                                                    if (value === "all") setInStock(undefined);
+                                                    else if (value === "in") setInStock(true);
+                                                    else setInStock(false);
+                                                }}
+                                            >
+                                                <SelectTrigger className="h-9">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All Products</SelectItem>
+                                                    <SelectItem value="in">In Stock Only</SelectItem>
+                                                    <SelectItem value="out">Out of Stock</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+
+                                    {/* Desktop: Full Filter UI */}
+                                    <ScrollArea className="hidden lg:block h-[calc(100vh-300px)]">
                                         <div className="space-y-6 pr-4">
                                             {/* Categories Filter */}
                                             <div>
