@@ -27,13 +27,6 @@ export default function ProductPreviewDialog({
     const [api, setApi] = useState<CarouselApi>();
     const [current, setCurrent] = useState(0);
 
-    if (!product) return null;
-
-    const hasDiscount = product.discountedAmount && product.discountedAmount < product.amount;
-
-    // Get the number of images
-    const imageCount = product.imageUrls?.length || 0;
-
     // Update current slide when carousel changes
     useEffect(() => {
         if (!api) return;
@@ -42,6 +35,13 @@ export default function ProductPreviewDialog({
             setCurrent(api.selectedScrollSnap());
         });
     }, [api]);
+
+    if (!product) return null;
+
+    const hasDiscount = product.discountedAmount && product.discountedAmount < product.amount;
+
+    // Get the number of images
+    const imageCount = product.imageUrls?.length || 0;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

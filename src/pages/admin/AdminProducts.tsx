@@ -113,7 +113,8 @@ export default function AdminProducts() {
     const handleEdit = async (product: Product) => {
         try {
             // Fetch full product details to get all images and variants
-            const response = await fetch(`http://localhost:5000/api/products/${product._id}`, {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const response = await fetch(`${API_URL}/api/products/${product._id}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
@@ -133,7 +134,8 @@ export default function AdminProducts() {
     const handlePreview = async (product: Product) => {
         try {
             // Fetch full product details
-            const response = await fetch(`http://localhost:5000/api/products/${product._id}`, {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const response = await fetch(`${API_URL}/api/products/${product._id}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
